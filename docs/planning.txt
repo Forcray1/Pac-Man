@@ -1,0 +1,188 @@
+TODO:
+
+- Custom configuration file in JSON [DONE TO CHECK]
+- LvL generation based on the a-maze-ing package [DONE MISSING MORE THAN ONE LEVEL]
+- Hghscores system (Any type, up for everything) [To decide later on]
+- Graphical UI
+- Deployable on steam, to adapt and test once done/ while coding
+- Include a Cheat Mode
+- Main loop to accord to :
+	Main Menu > start game > Win or Lose > Enter name for highscore > Back to
+	Main Menu
+
+Specific instructions:
+
+- Usage :
+	$> python3 pac-man.py config.json
+
+- Config JSON File : [DONE]
+	Format free to do, recommanded keys : 
+		• highscore_filename
+		• level array of multiple levels
+		• width , height for each level
+		• lives : 3
+		• pacgum : 42
+		• points_per_pacgum : 10
+		• points_per_super_pacgum : 50
+		• points_per_ghost : 200
+		• seed : 42
+		• level_max_time : 90
+
+- Generator package requierments :
+	- Set to PERFECT=False
+	- Must be used and adapt pacman to the mazegen, not the opposite
+	- Handle mistakes from the original package
+
+- Highscore requierments:
+	• Be stored as you choose (e.g., json file on project, on disk, etc.).
+	• Be robust to file errors (missing file, invalid format, etc.).
+	• Handle player names (max 10 characters, alphanumeric and spaces only).
+	• Handle scores (non-negative integers).
+	• Keep the top 10 highscores, with player names and scores.
+	• Load highscores at game start and save them at game end.
+	• Allow players to enter their name when they end the game (win or lose).
+	• Display highscores in the main menu.
+
+Rules for programming and generation :
+
+Level Design:
+
+1st level must be a set seed, and then random seeds
+At the four corners of the maze, a super PackGum must be here, as well as the four ghosts, all in theire respective corner
+Player start at the center of the maze
+
+Player specification:
+
+Can't go through walls [DONE]
+The player starts in the middle of the maze. [DONE]
+Can only go N,S,E or W, using zqsd (wasd) or the directionnal arrows [DONE]
+Start with 3 lives
+If touched by a ghost die [DONE]
+If die, respawn in the middle of the maze, and loose one of his lifes
+Once all life are done, game over
+Level's win once all PacGum are eaten [DONE]
+Eating a PacGum give [X] points to score, and a Super PacGum give [Y] to score and the ability to eat the ghosts [DONE]
+If a ghost is eaten by player, give [Z] points to score [DONE]
+
+Ghosts specification:
+
+Move through corridors (no going through walls) [DONE]
+Chase the player when not in edible mode (if Player do not have Super PacGum buff) [DONE]
+Run away when edible [DONE]
+Respawn to theire corner after death (cooldown of x sec)
+
+Cheat Mode specification:
+
+Mostly here for the peer review so implement some usefull feature:
+
+Can be activated
+
+Idea of features:
+	- Invincibility
+	- going through walls
+	- toggle edible mode
+	- Pause Ghosts (Not the game, just stop the ghosts movements)
+	- Speed modifier (as for the tick to be modified)
+	- Skip level
+	- To add any other ideas
+
+GameRules:
+
+At least 10lvls
+Each level as a max time to be completed, otherwise, Lost a live / restart / whatever we want
+If player completed level x, go to level x+1
+Score and lives is kept between levels and is a cumulative score 
+Game end one player has no more lives, or all levels are completed
+Once game end, Final score showed, possibility to enter a username to store the highscore
+Once Highscore save, get back to the main menu
+
+User Interface :
+
+- Game Menu :
+	* Start Game
+	* View highscores - Display Top 10 highscores
+	* Instructions - Show game control and Rules
+	* Exit - Close the game application
+
+- InGame HUD :
+	* Current score
+	* Remaining lives
+	* Current level
+	* Time remaining for actual level
+
+- Pause Menu :
+	* Back to the game
+	* Return to main menu
+
+- Game Over screen :
+	* Display final score
+	* Prompts the player to enter their name to save the score in the highscores list.
+
+- Victory screen :
+	* Display final score and glaze the player
+	* Prompts the player to enter their name to save the score in the highscores list.
+
+
+
+Project Packaging :
+
+You must deliver:
+	• A complete game that can be installed and launched from a public platform (e.g.,
+	Steam or Itch.io) as a free but unlisted/private build.
+	• The packaged game must be fully functional.
+	• Provide minimal in-package instructions(controls, options, configuration).
+	• Your Git repository must contain the full source and the packaging script/spec at
+	the root.
+	• You may be asked to regenerate the package during the peer review.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Organisation:
+
+Everything to do :
+	- Decide of the Interface theme
+	- Decide of the features to implements
+	- Decide the JSON file format
+	- Decide Highscores storage system
+	- Make the core of the game
+	- Create the Interface
+	- integrate everything to the Interface
+	- implement all options
+	- Build package to put on steam
+	- Debugg
+	- Tests and verif
+	- README
+	- Tests by others
+	- Last check
+	- Evaluation
+
+In order :
+
+- Make decisions about the core project (Theme, features, format, storage systems, etc...) [DONE]
+- Make the core of the game:
+	* Parser [DONE]
+	* Classes for objects [DONE]
+	* Maze Generator adapted [DONE]
+	* Simulation class :
+		. Implement the instanciation [DONE]
+		. put everything on a freshly generated maze [DONE]
+		. Set up Player [DONE]
+		. Set up ghosts [DONE]
+		. set up Pacgums / Super Pacgums on grid [DONE]
+		. Make Interaction between object working [DONE]
+		. Check for dynamic classes to work well [DONE]
+		. Mostly focus on making the movements and interaction working, we'll see after for detail [DONE]
+	* Make everything on a basic ASCII rendering, just to check if everything OK [DONE]
+- Create Interface Theme for each Object/Windows
+- Adapt Core of game to Interface
+- Add all implementations:
+	* start by cheat mode, so we can test with it other features
+	* Implement and add everything we want
+- Build the package for steam
+- Debugg and tests by us Once everything is supposed to be good
+- README
+- Tests by other than us
+- Last check by us
+- Submit
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------

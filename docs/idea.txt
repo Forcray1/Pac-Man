@@ -1,0 +1,20 @@
+Jeu en Fausse 3d
+
+Le jeu sera d'abord testé au terminal avec Curses, puis une fois fini, on créera des rendus Blender en 3d et animé pour créer la fausse 3d. Ca sera 3d Point and Click.
+On commencera sur un bureau, on verra la borne d'arcade qui sera clicquable pour rentrer en mode jeu. Il y aura des objets clicquable sur le bureau pour les parametres etc.
+
+Possible de faire un truc un peu sur le suspense genre a chaque fois que tu perd une vie et que tu te raproche du game over, la pièce change, soit on rajoute des trucs
+dans le même style que fnaf, avec un p'tit screamer en game over, et les highscores qui s'affichent, ou autre chose encore a voir
+
+pour les graphismes faudra voir sinon on peut le faire en pixel art mais ca risque de pas rendre ouf, ou passer une petite semaine sur blender, ou piquer des modèles
+
+Sinon une vibe un peu comme 'The king in yellow' (va guetter les dernières vidéos de wifies sur yt si tu vois pas de quoi je parle)
+
+On peut aussi ajouter les différentes versions de pacman, par exemple sur pacman 256, il y a d'autres ghosts qu'on peut rajouter
+
+
+Pour le code du tracking des fantomes, quand player vient de manger un Super pacgum, utiliser un algo type A* ou djikstra pour viser le corner respectif du ghosts
+pour le reste du temps, mettre en objectif la pos du joueur, avec des variations en fonction du ghost
+
+Toujours avancer vers self.direction de player, si mur, rester sur la case jusqu'a autre event (mort ou changement de direction)
+
