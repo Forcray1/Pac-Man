@@ -730,7 +730,7 @@ class PygameViewer:
         clock = pygame.time.Clock()
 
         anim_x = -250
-        
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -747,28 +747,36 @@ class PygameViewer:
 
             self.screen.fill((0, 0, 0))
             w, h = self.screen.get_size()
-            
+
             # --- Animation at the bottom ---
             anim_x += 5
             if anim_x > w + 100:
                 anim_x = -450
-                
+
             anim_y = h - 60
             time_ticks = pygame.time.get_ticks()
             pac_frame = (time_ticks // 100) % 4
             ghost_frame = (time_ticks // 150) % 2
-            
+
             pacman_sprite_list = self.sprites.get("Pacman_Right")
-            if pacman_sprite_list and pacman_sprite_list[pac_frame]:
-                self.screen.blit(pacman_sprite_list[pac_frame], (anim_x, anim_y))
-                
+            if isinstance(pacman_sprite_list, list):
+                pac_sprite = pacman_sprite_list[pac_frame]
+                if pac_sprite:
+                    self.screen.blit(
+                        pac_sprite, (anim_x, anim_y)
+                    )
+
             for i, name in enumerate(["Blinky", "Pinky", "Inky", "Clyde"]):
                 ghost_sprite_list = self.sprites.get(f"{name}_Right")
-                if ghost_sprite_list and ghost_sprite_list[ghost_frame]:
-                    ghost_x = anim_x + 100 + 60 * i
-                    self.screen.blit(ghost_sprite_list[ghost_frame], (ghost_x, anim_y))
+                if isinstance(ghost_sprite_list, list):
+                    ghost_sprite = ghost_sprite_list[ghost_frame]
+                    if ghost_sprite:
+                        ghost_x = anim_x + 100 + 60 * i
+                        self.screen.blit(
+                            ghost_sprite, (ghost_x, anim_y)
+                        )
             # -------------------------------
-            
+
             self._draw_centered(
                 "PAC-MAN", font_title, (255, 255, 0), h // 5
             )

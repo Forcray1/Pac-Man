@@ -1,7 +1,7 @@
 {
 	"level": 10,
-	"width": 13,
-	"height": 13,
+	"width": 50,
+	"height": 50,
 	"difficulty": 3,
 	"points_per_pacgum": 50,
 	"points_per_super_pacgum": 100,
