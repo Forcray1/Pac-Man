@@ -334,7 +334,8 @@ class Monitor:
                     self.player.eat_ghost()
                     ghost.is_eaten()
                 else:
-                    self.player.die()
+                    if not getattr(self.player, "god_mode", False):
+                        self.player.die()
 
     def is_cleared(self) -> bool:
         """

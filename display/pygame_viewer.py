@@ -63,6 +63,7 @@ class PygameViewer:
                 "level_max_time": int(
                     config.get("level_max_time", 90)
                 ),
+                "cheat_mode": config.get("cheat_mode", False),
             }
             practice_raw = str(
                 config.get("practice", "False")
@@ -985,6 +986,19 @@ class PygameViewer:
         self.screen.blit(
             font.render(text, True, (255, 255, 0)), (10, 5)
         )
+        
+        cheat_enabled = self.config.get("cheat_mode", False)
+        if cheat_enabled:
+            hud_font = pygame.font.SysFont("Arial", 16)
+            bottom_y = self.screen.get_height() - 25
+            
+            god_status = "ON" if self.monitor.player.god_mode else "OFF"
+            color = (0, 255, 0) if self.monitor.player.god_mode else (255, 255, 255)
+            
+            cheat_text = f"Cheats: [G] God Mode ({god_status})"
+            self.screen.blit(
+                hud_font.render(cheat_text, True, color), (10, bottom_y)
+            )
 
     def _reset_level(self, spawn_x: int, spawn_y: int) -> None:
         """
@@ -1024,6 +1038,9 @@ class PygameViewer:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         return "quit"
+                    cheat_enabled = self.config.get("cheat_mode", False)
+                    if cheat_enabled and event.key == pygame.K_g:
+                        self.monitor.player.god_mode = not self.monitor.player.god_mode
 
             if not self.monitor.player.is_dying:
                 keys = pygame.key.get_pressed()

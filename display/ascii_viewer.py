@@ -61,6 +61,7 @@ class AsciiViewer:
                 "p_Spacgums": int(
                     config.get("points_per_super_pacgum", 50)),
                 "super_time":    int(config.get("super_time", 30)),
+                "cheat_mode": config.get("cheat_mode", False),
             }
         else:
             self.maze_width = 15
@@ -71,6 +72,7 @@ class AsciiViewer:
                 "p_pacgums": 10,
                 "p_Spacgums": 50,
                 "super_time": 30,
+                "cheat_mode": False,
             }
 
         self.maze_lines: list[str] = []
@@ -218,8 +220,14 @@ class AsciiViewer:
         try:
             self.stdscr.addstr(1,
                                2,
-                               f"SCORE: {monitor.player.score}{mode}",
+                               f"SCORE: {monitor.player.score}  LIVES: {monitor.player.lives}{mode}",
                                curses.A_BOLD)
+            
+            cheat_enabled = self.config.get("cheat_mode", False)
+            if cheat_enabled:
+                god_status = "ON" if monitor.player.god_mode else "OFF"
+                cheat_text = f"Cheats: [G] God Mode ({god_status})"
+                self.stdscr.addstr(len(self.maze_lines) + 2, 2, cheat_text, curses.color_pair(3))
         except curses.error:
             pass
 
@@ -330,6 +338,9 @@ class AsciiViewer:
                 if key == ord('q'):
                     running = False
                     break
+                cheat_enabled = self.config.get("cheat_mode", False)
+                if cheat_enabled and key == ord('g'):
+                    monitor.player.god_mode = not monitor.player.god_mode
                 elif key == curses.KEY_UP:
                     monitor.player.set_direction(0, -1)
                 elif key == curses.KEY_DOWN:

@@ -25,6 +25,9 @@ class PacMan(Entity):
         # Buffer for "Cornering"
         self.next_direction: Tuple[int, int] = (0, 0)
 
+        # Cheats
+        self.god_mode: bool = False
+
         # Management of "Super" mode (when eating a super pac-gum)
         self.is_powered_up: bool = False
         self.power_timer: int = 0
