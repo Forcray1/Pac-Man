@@ -304,54 +304,71 @@ class AsciiViewer:
         stdscr.nodelay(True)
         stdscr.keypad(True)
 
+        self._seed = int(self.config.get("seed", 0))
         monitor = self._build_monitor()
 
-        # Initial draw and pause
-        self._draw_maze()
-        self._draw_hud(monitor)
-        self._draw_entities(monitor)
-        stdscr.refresh()
-        curses.napms(2000)  # Pause for 2 seconds to assimilate the map
-
-        running = True
-        tick_counter = 0
-
-        while running:
+        while True:
+            # Initial draw and pause
             self._draw_maze()
             self._draw_hud(monitor)
             self._draw_entities(monitor)
-            self._draw_debug(monitor)
             stdscr.refresh()
+            curses.napms(2000)  # Pause for 2 seconds to assimilate the map
 
-            # Keyboard input
-            key = stdscr.getch()
-            if key == ord('q'):
-                running = False
-            elif key == curses.KEY_UP:
-                monitor.player.set_direction(0, -1)
-            elif key == curses.KEY_DOWN:
-                monitor.player.set_direction(0, 1)
-            elif key == curses.KEY_LEFT:
-                monitor.player.set_direction(-1, 0)
-            elif key == curses.KEY_RIGHT:
-                monitor.player.set_direction(1, 0)
+            running = True
+            tick_counter = 0
 
-            # Game tick (every 5 frames = ~150 ms)
-            tick_counter += 1
-            if tick_counter >= 5:
-                tick_counter = 0
-                if not monitor.player.is_dying:
-                    try:
-                        monitor.update()
-                    except Exception:
-                        print("ERROR: An unexpected error"
-                              "occurred while choosing target")
-                        return
+            while running:
+                self._draw_maze()
+                self._draw_hud(monitor)
+                self._draw_entities(monitor)
+                self._draw_debug(monitor)
+                stdscr.refresh()
 
-            if monitor.is_cleared():
-                running = False
+                # Keyboard input
+                key = stdscr.getch()
+                if key == ord('q'):
+                    running = False
+                    break
+                elif key == curses.KEY_UP:
+                    monitor.player.set_direction(0, -1)
+                elif key == curses.KEY_DOWN:
+                    monitor.player.set_direction(0, 1)
+                elif key == curses.KEY_LEFT:
+                    monitor.player.set_direction(-1, 0)
+                elif key == curses.KEY_RIGHT:
+                    monitor.player.set_direction(1, 0)
 
-            curses.napms(30)
+                # Game tick (every 5 frames = ~150 ms)
+                tick_counter += 1
+                if tick_counter >= 5:
+                    tick_counter = 0
+                    if not monitor.player.is_dying:
+                        try:
+                            monitor.update()
+                        except Exception:
+                            print("ERROR: An unexpected error"
+                                  "occurred while choosing target")
+                            return
+
+                if monitor.is_cleared():
+                    break
+                    
+                if monitor.player.lives <= 0:
+                    running = False
+                    break
+
+                curses.napms(30)
+                
+            if not running:
+                break
+                
+            score = monitor.player.score
+            lives = monitor.player.lives
+            self._seed = 0
+            monitor = self._build_monitor()
+            monitor.player.score = score
+            monitor.player.lives = lives
 
 
 if __name__ == "__main__":

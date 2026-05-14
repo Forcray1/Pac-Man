@@ -1,8 +1,8 @@
 {
 	"level": 10,
-	"width": 50,
-	"height": 50,
-	"difficulty": 3,
+	"width": 6,
+	"height": 6,
+	"difficulty": 1,
 	"points_per_pacgum": 50,
 	"points_per_super_pacgum": 100,
 	"points_per_ghost": 500,
@@ -10,6 +10,6 @@
 	"level_max_time": 90,
 	"cheat_mode": "True",
 	"display_mode": 2,
-	"super_time": 8,
-	"practice": "False"
+	"super_time": 10,
+	"practice": "True"
 }

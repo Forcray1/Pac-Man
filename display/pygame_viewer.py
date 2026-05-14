@@ -706,13 +706,26 @@ class PygameViewer:
                 self._run_instructions()
             elif action == "play":
                 # Build fresh maze before each game
+                self._seed = int(self.config.get("seed", 0))
                 self.monitor = self._build_monitor()
-                result = self._run_game()
-                if result == "quit":
-                    break
-                self._run_end_screen(
-                    result, self.monitor.player.score
-                )
+                
+                while True:
+                    result = self._run_game()
+                    if result == "quit":
+                        break
+                    elif result == "win":
+                        score = self.monitor.player.score
+                        lives = self.monitor.player.lives
+                        
+                        self._seed = 0
+                        self.monitor = self._build_monitor()
+                        
+                        self.monitor.player.score = score
+                        self.monitor.player.lives = lives
+                        continue
+                    elif result == "lose":
+                        self._run_end_screen("lose", self.monitor.player.score)
+                        break
         pygame.quit()
 
     def _run_menu(self) -> str:

@@ -102,6 +102,8 @@ Timeline :
 Crash si tu mets "None" en pseudo pour le highscore.
 Je comprend pas le bug. J'avais lance normalement, tout marchait, puis j'ai mit None en pseudo pour test, et la il me met le message en dessous. Il cherchait scores/3/highscores.json mais avait il semblait chercer scores/1/highscores.json, c'est comme si le None avait change le chemin. Donc la j'ai remis highscores 3 en destination. Trop bizarre.
 
+UPDATE : J'ai compris l'erreur, la difficulty dans le fichier config fait changer le numero de dossier pour les highscores. Peut etre est-ce une confusion avec les levels et pas la difficulte. 
+
 Traceback (most recent call last):
   File "/home/avauclai/Desktop/Pac-Man/pac-man.py", line 32, in <module>
     main()
@@ -130,3 +132,6 @@ Traceback (most recent call last):
     with open(self.filename, "w", encoding="utf-8") as f:
          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 FileNotFoundError: [Errno 2] No such file or directory: 'scores/3/highscores.json'
+
+
+Il faut mettre en place les difficultes. Elles dependent du fichier de config. La signification des niveaux de difficultes se trouvent dans le readme. Le premier niveau ne doit jamais etre soumis a la difficultes.
