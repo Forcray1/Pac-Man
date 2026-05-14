@@ -709,7 +709,7 @@ class PygameViewer:
                 # Build fresh maze before each game
                 self._seed = int(self.config.get("seed", 0))
                 self.monitor = self._build_monitor()
-                
+
                 while True:
                     result = self._run_game()
                     if result == "quit":
@@ -717,10 +717,10 @@ class PygameViewer:
                     elif result == "win":
                         score = self.monitor.player.score
                         lives = self.monitor.player.lives
-                        
+
                         self._seed = 0
                         self.monitor = self._build_monitor()
-                        
+
                         self.monitor.player.score = score
                         self.monitor.player.lives = lives
                         continue
@@ -986,15 +986,21 @@ class PygameViewer:
         self.screen.blit(
             font.render(text, True, (255, 255, 0)), (10, 5)
         )
-        
+
         cheat_enabled = self.config.get("cheat_mode", False)
         if cheat_enabled:
             hud_font = pygame.font.SysFont("Arial", 16)
             bottom_y = self.screen.get_height() - 25
-            
-            god_status = "ON" if self.monitor.player.god_mode else "OFF"
-            color = (0, 255, 0) if self.monitor.player.god_mode else (255, 255, 255)
-            
+
+            if self.monitor.player.god_mode:
+                god_status = "ON"
+            else:
+                god_status = "OFF"
+            if self.monitor.player.god_mode:
+                color = (0, 255, 0)
+            else:
+                color = (255, 255, 255)
+
             cheat_text = f"Cheats: [G] God Mode ({god_status})"
             self.screen.blit(
                 hud_font.render(cheat_text, True, color), (10, bottom_y)
@@ -1038,9 +1044,11 @@ class PygameViewer:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         return "quit"
-                    cheat_enabled = self.config.get("cheat_mode", False)
+                    cheat_enabled = self.config.get(
+                        "cheat_mode", False)
                     if cheat_enabled and event.key == pygame.K_g:
-                        self.monitor.player.god_mode = not self.monitor.player.god_mode
+                        self.monitor.player.god_mode = (
+                            not self.monitor.player.god_mode)
 
             if not self.monitor.player.is_dying:
                 keys = pygame.key.get_pressed()

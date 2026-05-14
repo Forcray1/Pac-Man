@@ -220,14 +220,17 @@ class AsciiViewer:
         try:
             self.stdscr.addstr(1,
                                2,
-                               f"SCORE: {monitor.player.score}  LIVES: {monitor.player.lives}{mode}",
+                               f"SCORE: {monitor.player.score}"
+                               f"LIVES: {monitor.player.lives}{mode}",
                                curses.A_BOLD)
-            
+
             cheat_enabled = self.config.get("cheat_mode", False)
             if cheat_enabled:
                 god_status = "ON" if monitor.player.god_mode else "OFF"
                 cheat_text = f"Cheats: [G] God Mode ({god_status})"
-                self.stdscr.addstr(len(self.maze_lines) + 2, 2, cheat_text, curses.color_pair(3))
+                cheat_row = len(self.maze_lines) + 2
+                self.stdscr.addstr(cheat_row, 2, cheat_text,
+                                   curses.color_pair(3))
         except curses.error:
             pass
 
@@ -364,16 +367,16 @@ class AsciiViewer:
 
                 if monitor.is_cleared():
                     break
-                    
+
                 if monitor.player.lives <= 0:
                     running = False
                     break
 
                 curses.napms(30)
-                
+
             if not running:
                 break
-                
+
             score = monitor.player.score
             lives = monitor.player.lives
             self._seed = 0
