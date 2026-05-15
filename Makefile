@@ -1,14 +1,14 @@
-MODULE = pac-man config.json
+MODULE = pac-man
 CODE = entities display core
 
 install:
 	uv sync
 
 run:$
-	uv run python -m $(MODULE)
+	uv run python -m $(MODULE) config.json
 
 debug:
-	uv run python -m pdb $(MODULE)
+	uv run python -m pdb $(MODULE) config.json
 
 clean:
 	rm -rf .venv
