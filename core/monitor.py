@@ -123,12 +123,21 @@ class Monitor:
         ]
 
         # 3. Pick random super-pac-gum positions
-        nb_super = min(
-            config.get("super_pacgums", 4), len(empty_cells)
-        )
-        super_positions = set(
-            map(tuple, random.sample(empty_cells, nb_super))
-        )
+        corners_targets = [
+            (1, 1),                           # Haut-Gauche
+            (w_ext - 2, 1),                   # Haut-Droite
+            (1, h_ext - 2),                   # Bas-Gauche
+            (w_ext - 2, h_ext - 2)            # Bas-Droite
+        ]
+        
+        super_positions = set()
+        for target in corners_targets:
+            # On trouve la cellule marchable la plus proche de ce coin
+            best_cell = min(
+                empty_cells,
+                key=lambda c: abs(c[0] - target[0]) + abs(c[1] - target[1])
+            )
+            super_positions.add(best_cell)
 
         # 4. Convert to int grid with pac-gum markers
         int_grid = [
