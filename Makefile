@@ -1,4 +1,4 @@
-MODULE = pac-man.py
+MODULE = pac-man config.json
 CODE = entities display core
 
 install:

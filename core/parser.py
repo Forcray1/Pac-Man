@@ -76,7 +76,7 @@ def parser(file: str) -> dict:
             raise ValueError
     except Exception:
         print(f"ERROR: The difficulty has to be a positive integer between"
-              f" 1 (easy) and 5 (really hard) ({config['difficulty']})",
+              f" 1 (normal) and 5 (really hard) ({config['difficulty']})",
               file=sys.stderr)
         return {}
     # Check value of points_per_pacgum

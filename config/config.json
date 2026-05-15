@@ -1,8 +1,8 @@
 {
 	"level": 10,
-	"width": 13,
-	"height": 13,
-	"difficulty": 1,
+	"width": 8,
+	"height": 8,
+	"difficulty": 3,
 	"points_per_pacgum": 50,
 	"points_per_super_pacgum": 100,
 	"points_per_ghost": 500,

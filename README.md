@@ -105,6 +105,11 @@ Timeline :
 	avauclai:
 		- We understood that the most suitable format was WebP, compress to 100%. We are still thinking about how to integrate the image volume on the git in the most intelligent way possible.
 		- Start of animations (BaseAnimation, TransitionToArcade) stored on a drive
+	mlorenzo :
+		- Added the current level to the game window
+		- Edited the scores file storqge, to have a specialized files for each difficulty level
+
+
 # Edits since last commit:
 
 

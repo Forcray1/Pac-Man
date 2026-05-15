@@ -709,14 +709,16 @@ class PygameViewer:
                 # Build fresh maze before each game
                 self._seed = int(self.config.get("seed", 0))
                 self.monitor = self._build_monitor()
+                current_level = 1
 
                 while True:
-                    result = self._run_game()
+                    result = self._run_game(current_level)
                     if result == "quit":
                         break
                     elif result == "win":
                         score = self.monitor.player.score
                         lives = self.monitor.player.lives
+                        current_level += 1
 
                         self._seed = 0
                         self.monitor = self._build_monitor()
@@ -970,10 +972,10 @@ class PygameViewer:
         self.screen.blit(surf, (x, y))
 
     def _draw_hud(
-        self, elapsed: int, fps: int, max_time: int
+        self, elapsed: int, fps: int, max_time: int, level: int = 1
     ) -> None:
         """
-        Draw score, lives and remaining time at the top.
+        Draw score, lives, level and remaining time at the top.
         """
         font = pygame.font.SysFont("Arial", 20, bold=True)
         player = self.monitor.player
@@ -981,6 +983,7 @@ class PygameViewer:
         text = (
             f"SCORE: {player.score}    "
             f"LIVES: {player.lives}    "
+            f"LEVEL: {level}    "
             f"TIME: {remaining}s"
         )
         self.screen.blit(
@@ -1025,7 +1028,7 @@ class PygameViewer:
         for ghost in self.monitor.ghosts:
             ghost.reset()
 
-    def _run_game(self) -> str:
+    def _run_game(self, level: int = 1) -> str:
         """
         Game loop. Returns 'win', 'lose', or 'quit'.
         """
@@ -1090,7 +1093,7 @@ class PygameViewer:
                 self.draw_ghost_paths()
             self.draw_ghosts()
             self.draw_player()
-            self._draw_hud(elapsed, fps, max_time)
+            self._draw_hud(elapsed, fps, max_time, level)
             pygame.display.flip()
             if elapsed == 1 or self.reset:
                 time.sleep(2)
