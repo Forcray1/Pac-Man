@@ -6,5 +6,9 @@
 	{
 		"name": "test",
 		"score": 400
+	},
+	{
+		"name": "test 12",
+		"score": 300
 	}
 ]

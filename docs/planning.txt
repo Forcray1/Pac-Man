@@ -1,19 +1,19 @@
 TODO:
 
-- Custom configuration file in JSON [DONE TO CHECK]
-- LvL generation based on the a-maze-ing package [DONE MISSING MORE THAN ONE LEVEL]
-- Hghscores system (Any type, up for everything) [To decide later on]
-- Graphical UI
+- Custom configuration file in JSON [DONE]
+- LvL generation based on the a-maze-ing package [DONE]
+- Hghscores system (Any type, up for everything) [DONE]
+- Graphical UI [DONE]
 - Deployable on steam, to adapt and test once done/ while coding
-- Include a Cheat Mode
+- Include a Cheat Mode [DONE TO UPGRADE]
 - Main loop to accord to :
 	Main Menu > start game > Win or Lose > Enter name for highscore > Back to
-	Main Menu
+	Main Menu [DONE]
 
 Specific instructions:
 
 - Usage :
-	$> python3 pac-man.py config.json
+	$> python3 pac-man.py config.json [DONE]
 
 - Config JSON File : [DONE]
 	Format free to do, recommanded keys : 
@@ -28,12 +28,12 @@ Specific instructions:
 		• seed : 42
 		• level_max_time : 90
 
-- Generator package requierments :
+- Generator package requierments : [DONE]
 	- Set to PERFECT=False
 	- Must be used and adapt pacman to the mazegen, not the opposite
 	- Handle mistakes from the original package
 
-- Highscore requierments:
+- Highscore requierments: [DONE]
 	• Be stored as you choose (e.g., json file on project, on disk, etc.).
 	• Be robust to file errors (missing file, invalid format, etc.).
 	• Handle player names (max 10 characters, alphanumeric and spaces only).
@@ -47,19 +47,19 @@ Rules for programming and generation :
 
 Level Design:
 
-1st level must be a set seed, and then random seeds
+1st level must be a set seed, and then random seeds [DONE]
 At the four corners of the maze, a super PackGum must be here, as well as the four ghosts, all in theire respective corner
-Player start at the center of the maze
+Player start at the center of the maze [DONE]
 
 Player specification:
 
 Can't go through walls [DONE]
 The player starts in the middle of the maze. [DONE]
 Can only go N,S,E or W, using zqsd (wasd) or the directionnal arrows [DONE]
-Start with 3 lives
+Start with 3 lives [DONE]
 If touched by a ghost die [DONE]
-If die, respawn in the middle of the maze, and loose one of his lifes
-Once all life are done, game over
+If die, respawn in the middle of the maze, and loose one of his lifes [DONE]
+Once all life are done, game over [DONE]
 Level's win once all PacGum are eaten [DONE]
 Eating a PacGum give [X] points to score, and a Super PacGum give [Y] to score and the ability to eat the ghosts [DONE]
 If a ghost is eaten by player, give [Z] points to score [DONE]
@@ -78,9 +78,9 @@ Mostly here for the peer review so implement some usefull feature:
 Can be activated
 
 Idea of features:
-	- Invincibility
+	- Invincibility [DONE]
 	- going through walls
-	- toggle edible mode
+	- toggle edible mode 
 	- Pause Ghosts (Not the game, just stop the ghosts movements)
 	- Speed modifier (as for the tick to be modified)
 	- Skip level
@@ -88,11 +88,11 @@ Idea of features:
 
 GameRules:
 
-At least 10lvls
-Each level as a max time to be completed, otherwise, Lost a live / restart / whatever we want
-If player completed level x, go to level x+1
-Score and lives is kept between levels and is a cumulative score 
-Game end one player has no more lives, or all levels are completed
+At least 10lvls [DONE]
+Each level as a max time to be completed, otherwise, Lost a live / restart / whatever we want [DONE]
+If player completed level x, go to level x+1 [DONE]
+Score and lives is kept between levels and is a cumulative score [DONE]
+Game end one player has no more lives, or all levels are completed 
 Once game end, Final score showed, possibility to enter a username to store the highscore
 Once Highscore save, get back to the main menu
 

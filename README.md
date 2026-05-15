@@ -108,6 +108,7 @@ Timeline :
 	mlorenzo :
 		- Added the current level to the game window
 		- Edited the scores file storqge, to have a specialized files for each difficulty level
+		- Made the win screen working by adding "level" to the config of monitor
 
 
 # Edits since last commit:

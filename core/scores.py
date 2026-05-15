@@ -64,8 +64,9 @@ class ScoreManager:
     def check_name(self, username: str) -> bool:
         if len(username) > 10:
             return False
-        if not username.isalpha():
-            return False
+        for i in username:
+            if not i.isalpha() and not i.isdigit() and not i == " ":
+                return False
         return True
 
     def add(self, name: str, score: int) -> bool:

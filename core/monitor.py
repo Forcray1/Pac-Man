@@ -41,6 +41,7 @@ class Monitor:
         self._parse_items()
         self.start_pacgums: int = len(self.pacgums)
         self.difficulty: int = self.config.get("difficulty", 0)
+        self.level: int = self.config.get("level", 0)
 
     # ------------------------------------------------------------------
     # Factory

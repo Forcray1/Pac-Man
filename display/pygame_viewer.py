@@ -64,6 +64,7 @@ class PygameViewer:
                     config.get("level_max_time", 90)
                 ),
                 "cheat_mode": config.get("cheat_mode", False),
+                "level": int(config.get("level", 1)),
             }
             practice_raw = str(
                 config.get("practice", "False")
@@ -714,6 +715,9 @@ class PygameViewer:
                 while True:
                     result = self._run_game(current_level)
                     if result == "quit":
+                        break
+                    elif result == "win" and current_level == self.monitor.level:
+                        self._run_end_screen("win", self.monitor.player.score)
                         break
                     elif result == "win":
                         score = self.monitor.player.score
