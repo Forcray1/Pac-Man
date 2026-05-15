@@ -40,6 +40,7 @@ class Monitor:
         self.super_pacgums: list[SuperPacgum] = []
         self._parse_items()
         self.start_pacgums: int = len(self.pacgums)
+        self.difficulty: int = self.config.get("difficulty", 0)
 
     # ------------------------------------------------------------------
     # Factory
@@ -233,15 +234,22 @@ class Monitor:
 
         # --- GHOSTS SPEED ---
         for ghost in self.active_ghosts:
+            if self.difficulty == 1:
+                a = 1.0
+            elif self.difficulty <= 3:
+                a = 1.10
+            else:
+                a = 1.25
+
             if ghost.is_dead:
                 # Returns very fast to spawn
-                ghost.speed_multiplier = base_speed * 2.0
+                ghost.speed_multiplier = base_speed * 2.0 * a
             elif ghost.eatable:
                 # Frighten ghosts are slowed
-                ghost.speed_multiplier = base_speed * 0.75
+                ghost.speed_multiplier = base_speed * 0.75 * a
             else:
                 # Default speed
-                ghost.speed_multiplier = base_speed
+                ghost.speed_multiplier = base_speed * a
 
                 # Elroy mode for Blinky
                 from entities.ghost_types import Blinky as _Blinky
