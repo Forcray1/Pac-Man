@@ -92,19 +92,19 @@ At least 10lvls [DONE]
 Each level as a max time to be completed, otherwise, Lost a live / restart / whatever we want [DONE]
 If player completed level x, go to level x+1 [DONE]
 Score and lives is kept between levels and is a cumulative score [DONE]
-Game end one player has no more lives, or all levels are completed 
-Once game end, Final score showed, possibility to enter a username to store the highscore
-Once Highscore save, get back to the main menu
+Game end one player has no more lives, or all levels are completed  [DONE]
+Once game end, Final score showed, possibility to enter a username to store the highscore [DONE]
+Once Highscore save, get back to the main menu [DONE]
 
 User Interface :
 
-- Game Menu :
+- Game Menu : [DONE]
 	* Start Game
 	* View highscores - Display Top 10 highscores
 	* Instructions - Show game control and Rules
 	* Exit - Close the game application
 
-- InGame HUD :
+- InGame HUD : [DONE]
 	* Current score
 	* Remaining lives
 	* Current level
@@ -114,11 +114,11 @@ User Interface :
 	* Back to the game
 	* Return to main menu
 
-- Game Over screen :
+- Game Over screen : [DONE]
 	* Display final score
 	* Prompts the player to enter their name to save the score in the highscores list.
 
-- Victory screen :
+- Victory screen : [DONE]
 	* Display final score and glaze the player
 	* Prompts the player to enter their name to save the score in the highscores list.
 

@@ -20,8 +20,10 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         # --- 1. SCREEN BOUNDS DETECTION ---
         info = pygame.display.Info()
         # Get the current monitor resolution (e.g. 1920x1080)
-        screen_max_w = info.current_w
-        screen_max_h = info.current_h
+        self.screen_max_w = info.current_w
+        self.screen_max_h = info.current_h
+        screen_max_w = self.screen_max_w
+        screen_max_h = self.screen_max_h
         self.reset = False
 
         # Define a safety margin to avoid touching the screen edges
@@ -32,6 +34,8 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
             self.maze_width = int(config.get("width", 15))
             self.maze_height = int(config.get("height", 15))
             self._seed = int(config.get("seed", 0))
+            self._base_maze_width = self.maze_width
+            self._base_maze_height = self.maze_height
             self.config = {
                 "super_pacgums": 4,
                 "p_pacgums": int(config.get("points_per_pacgum", 10)),
@@ -44,6 +48,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                 ),
                 "cheat_mode": config.get("cheat_mode", False),
                 "level": int(config.get("level", 1)),
+                "difficulty": int(config.get("difficulty", 1)),
             }
             practice_raw = str(
                 config.get("practice", "False")
@@ -102,6 +107,17 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         self._preload_raw_images()
         self.scale_sprites()
 
+    def _refit_window(self) -> None:
+        """Recompute rows/cols, tile size, and resize the window."""
+        self.rows = len(self.monitor.grid)
+        self.cols = len(self.monitor.grid[0])
+        available_w = self.screen_max_w * 0.85
+        available_h = self.screen_max_h * 0.85
+        tile_h = int((available_h - (2 * self.margin)) // self.rows)
+        tile_w = int((available_w - (2 * self.margin)) // self.cols)
+        new_tile = max(12, min(tile_h, tile_w, 48))
+        self._update_dimensions(new_tile)
+
     def _build_monitor(self) -> Monitor:
         cache_key = (self.maze_width, self.maze_height, self._seed)
         if self._seed > 0 and cache_key in _maze_cache:
@@ -135,6 +151,8 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
             elif action == "play":
                 # Build fresh maze before each game
                 self._seed = int(self.config.get("seed", 0))
+                self.maze_width = self._base_maze_width
+                self.maze_height = self._base_maze_height
                 self.monitor = self._build_monitor()
                 current_level = 1
 
@@ -154,7 +172,10 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                         current_level += 1
 
                         self._seed = 0
+                        self.maze_width += 3
+                        self.maze_height += 3
                         self.monitor = self._build_monitor()
+                        self._refit_window()
 
                         self.monitor.player.score = score
                         self.monitor.player.lives = lives
