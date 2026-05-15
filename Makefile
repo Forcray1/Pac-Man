@@ -1,14 +1,13 @@
-MODULE = pac-man
 CODE = entities display core
 
 install:
 	uv sync
 
 run:$
-	uv run python -m $(MODULE) config.json
+	uv run python -m pac-man config.json
 
 debug:
-	uv run python -m pdb $(MODULE) config.json
+	uv run python -m pdb pac-man config.json
 
 clean:
 	rm -rf .venv
@@ -17,12 +16,12 @@ clean:
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
 
 lint:
-	uv run flake8 $(CODE) $(MODULE)
-	uv run mypy $(CODE) $(MODULE) --explicit-package-bases --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	uv run flake8 $(CODE) pac-man.py
+	uv run mypy $(CODE) pac-man.py --explicit-package-bases --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
-	uv run flake8 $(CODE) $(MODULE)
-	uv run mypy $(CODE) $(MODULE) --strict
+	uv run flake8 $(CODE) pac-man.py
+	uv run mypy $(CODE) pac-man.py --strict
 
 %:
 	@:
