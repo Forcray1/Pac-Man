@@ -12,7 +12,6 @@ VALID_KEYS = {
     "seed",
     "level_max_time",
     "cheat_mode",
-    "display_mode",
     "super_time",
     "practice"
 }
@@ -141,13 +140,6 @@ def parser(file: str) -> dict:
               f"'True' or 'False' ({cheat})",
               file=sys.stderr)
         return {}
-    # Check value of display mode
-    display = config["display_mode"]
-    if display not in (1, 2, "1", "2"):
-        print(f"ERROR: The display mode have to be either "
-              f"1 for Ascii or 2 for the real game ({display})",
-              file=sys.stderr)
-        return {}
     # Check value of super time
     try:
         super_time = int(config["super_time"])
@@ -181,7 +173,6 @@ def parser(file: str) -> dict:
         "seed": seed,
         "level_max_time": time,
         "cheat_mode": cheat,
-        "display_mode": display,
         "super_time": super_time,
         "practice": practice
     }
