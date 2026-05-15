@@ -109,6 +109,7 @@ Timeline :
 		- Added the current level to the game window
 		- Edited the scores file storqge, to have a specialized files for each difficulty level
 		- Made the win screen working by adding "level" to the config of monitor
+		- Reorganization of the pygame_viewer in multiples files for better understanding
 
 
 # Edits since last commit:
