@@ -94,7 +94,17 @@ Timeline :
 	avauclai :
 		- The Pacgums weren’t spawning in the corners, probably because of the position of the ghosts, so I fixed it.
 		- We have noticed that the walls without any squares of other surrounding walls were treated as empty squares. So to fix it, I filled these walls with a rectangle the width of the walls
-
+14/05/2026:
+	avauclai:
+		- Animation on the launch screen
+		- Creation of the GodMod
+		- Implementation of the level system.
+		- We have become aware of the challenge related to the weight/quality ratio of animation images, which is imposed by the Git of 42.
+		- I have finished the main piece without animation of the 3D render.
+15/05/2026:
+	avauclai:
+		- We understood that the most suitable format was WebP, compress to 100%. We are still thinking about how to integrate the image volume on the git in the most intelligent way possible.
+		- Start of animations (BaseAnimation, TransitionToArcade) stored on a drive
 # Edits since last commit:
 
 
