@@ -221,8 +221,11 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                 if event.type == pygame.QUIT:
                     return "quit"
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        return "quit"
+                    if event.key in (pygame.K_ESCAPE, pygame.K_p):
+                        pause_result = self._run_pause_menu()
+                        if pause_result == "quit":
+                            return "quit"
+                        # "resume" — just continue the game loop
                     cheat_enabled = self.config.get(
                         "cheat_mode", False)
                     if cheat_enabled and event.key == pygame.K_g:

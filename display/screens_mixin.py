@@ -117,7 +117,7 @@ class ScreensMixin:
         lines: List[Tuple[str, Tuple[int, int, int]]] = [
             ("CONTROLS", (255, 255, 0)),
             ("Arrow keys / WASD  -  Move", (200, 200, 200)),
-            ("ESC  -  Back to menu", (200, 200, 200)),
+            ("ESC / P  -  Pause menu", (200, 200, 200)),
             ("", (0, 0, 0)),
             ("RULES", (255, 255, 0)),
             ("Eat all pac-gums to win.", (200, 200, 200)),
@@ -197,5 +197,75 @@ class ScreensMixin:
                 "ENTER to save  |  ESC to skip",
                 font_label, (100, 100, 100), h - 60,
             )
+            pygame.display.flip()
+            clock.tick(30)
+
+    def _run_pause_menu(self) -> str:
+        """Overlay pause menu. Returns 'resume' or 'quit'."""
+        font_title = pygame.font.SysFont("Arial", 52, bold=True)
+        font_item = pygame.font.SysFont("Arial", 36)
+        font_hint = pygame.font.SysFont("Arial", 20)
+        items = ["Resume", "Exit to Main Menu"]
+        actions = ["resume", "quit"]
+        selected = 0
+        clock = pygame.time.Clock()
+
+        # Capture the current game frame to use as background
+        background = self.screen.copy()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return "quit"
+                if event.type == pygame.KEYDOWN:
+                    if event.key in (pygame.K_ESCAPE, pygame.K_p):
+                        return "resume"
+                    if event.key == pygame.K_UP:
+                        selected = (selected - 1) % len(items)
+                    elif event.key == pygame.K_DOWN:
+                        selected = (selected + 1) % len(items)
+                    elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                        return actions[selected]
+
+            w, h = self.screen.get_size()
+
+            # Draw the frozen game frame underneath
+            self.screen.blit(background, (0, 0))
+
+            # Semi-transparent dark overlay
+            overlay = pygame.Surface((w, h), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 160))
+            self.screen.blit(overlay, (0, 0))
+
+            # Panel box
+            box_w, box_h = 340, 220
+            box_x = (w - box_w) // 2
+            box_y = (h - box_h) // 2
+            pygame.draw.rect(
+                self.screen, (30, 30, 60),
+                (box_x, box_y, box_w, box_h), border_radius=12,
+            )
+            pygame.draw.rect(
+                self.screen, (255, 255, 0),
+                (box_x, box_y, box_w, box_h), width=3, border_radius=12,
+            )
+
+            self._draw_centered(
+                "PAUSED", font_title, (255, 255, 0), box_y + 18
+            )
+
+            for i, label in enumerate(items):
+                color = (255, 255, 0) if i == selected else (200, 200, 200)
+                prefix = "> " if i == selected else "  "
+                self._draw_centered(
+                    f"{prefix}{label}", font_item, color,
+                    box_y + 100 + i * 54,
+                )
+
+            self._draw_centered(
+                "ESC / P  -  resume",
+                font_hint, (100, 100, 100), box_y + box_h + 8,
+            )
+
             pygame.display.flip()
             clock.tick(30)
