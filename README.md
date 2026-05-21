@@ -8,7 +8,7 @@
 	- 2: Ghosts are a bit faster than level 1
 	- 3: Maze is increasing in size at each level
 	- 4: Ghosts are faster than level 3
-	- 5: Ghosts are at theire fastest, and the maze is randomized each 30 seconds
+	- 5: Ghosts are at theire fastest, and the maze is randomized when half of the max time is remaining
 - "points_per_pacgum": Points earned for each PacGum
 - "points_per_super_pacgum": Points earned for each Super-PacGum
 - "points_per_ghost": Points earned for each Ghost eaten
