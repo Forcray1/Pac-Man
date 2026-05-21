@@ -1,10 +1,8 @@
-import random
-
 from entities.player import PacMan
 from entities.ghost import Ghost
 from entities.ghost_types import Blinky, Inky, Pinky, Clyde
 from entities.items import Pacgum, SuperPacgum
-
+from display._maze_utils import _FastMazeGenerator, _maze_cache
 
 EMPTY = 0
 WALL = 1
@@ -172,6 +170,61 @@ class Monitor:
             sgum.points = config.get("p_Spacgums", 50)
 
         return monitor
+
+    def _change_maze(self) -> None:
+        import random
+
+        maze_width = (self.cols - 1) // 2
+        maze_height = (self.rows - 1) // 2
+        new_seed = random.randint(1, 999_999)
+
+        generator = _FastMazeGenerator(
+            size=(maze_width, maze_height),
+            perfect=False,
+            seed=new_seed,
+        )
+        raw_maze = generator.maze
+
+        # Build boolean wall grid from the new maze
+        bool_grid = [[True] * self.cols for _ in range(self.rows)]
+        for y in range(maze_height):
+            for x in range(maze_width):
+                cell_val = raw_maze[y][x]
+                gx, gy = x * 2 + 1, y * 2 + 1
+                bool_grid[gy][gx] = (cell_val == 15)
+                if (cell_val & 1) == 0:
+                    bool_grid[gy - 1][gx] = False  # N
+                if (cell_val & 2) == 0:
+                    bool_grid[gy][gx + 1] = False  # E
+                if (cell_val & 4) == 0:
+                    bool_grid[gy + 1][gx] = False  # S
+                if (cell_val & 8) == 0:
+                    bool_grid[gy][gx - 1] = False  # W
+
+        # Force every occupied tile to remain walkable so no entity gets stuck
+        bool_grid[self.player.y][self.player.x] = False
+        for ghost in self.ghosts:
+            bool_grid[ghost.y][ghost.x] = False
+        for gum in self.pacgums:
+            if gum.active:
+                bool_grid[gum.y][gum.x] = False
+        for sgum in self.super_pacgums:
+            if sgum.active:
+                bool_grid[sgum.y][sgum.x] = False
+
+        # Rebuild int_grid: walls only, entities keep their positions
+        new_grid = [
+            [WALL if bool_grid[y][x] else EMPTY for x in range(self.cols)]
+            for y in range(self.rows)
+        ]
+        for gum in self.pacgums:
+            if gum.active:
+                new_grid[gum.y][gum.x] = PACGUM
+        for sgum in self.super_pacgums:
+            if sgum.active:
+                new_grid[sgum.y][sgum.x] = SUPER_PACGUM
+
+        self.grid = new_grid
 
     def _parse_items(self) -> None:
         """

@@ -172,6 +172,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                         lives = self.monitor.player.lives
                         god_mode = self.monitor.player.god_mode
                         ghosts_frozen = self.monitor.ghosts_frozen
+                        collision = self.monitor.collision
                         current_level += 1
 
                         self._seed = 0
@@ -184,6 +185,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                         self.monitor.player.lives = lives
                         self.monitor.player.god_mode = god_mode
                         self.monitor.ghosts_frozen = ghosts_frozen
+                        self.monitor.collision = collision
                         continue
                     elif result == "lose":
                         self._run_end_screen("lose", self.monitor.player.score)

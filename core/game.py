@@ -70,6 +70,9 @@ class Game:
 
             if self.monitor.is_cleared():
                 return "win"
+            if self.monitor.difficulty == 5:
+                if elapsed == (max_time * fps) // 2:
+                    self.monitor._change_maze()
             if elapsed >= max_time * fps:
                 self.monitor.player.die()
                 if self.monitor.player.lives <= 0:

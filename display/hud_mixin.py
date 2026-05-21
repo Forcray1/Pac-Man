@@ -48,9 +48,9 @@ class HudMixin:
                 color = (255, 255, 255)
 
             if self.monitor.collision:
-                collision_status = "ON"
-            else:
                 collision_status = "OFF"
+            else:
+                collision_status = "ON"
 
             if self.monitor.ghosts_frozen:
                 frozen_status = "ON"

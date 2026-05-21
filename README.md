@@ -118,9 +118,13 @@ Timeline :
 21/05/2026:
 	mlorenzo:
 		- Cheat menu fully implemented
+		- Reorganisation to put game logic in game.py
+		- All cheats implemented, and staying on throughout the levels
+		- Added the reroll of the maze when half of the requiered time is used at level 5
+		
 
 # Edits since last commit:
 
 
 # Edit a faire : 
-Au niveau de l'algo du orange. La il va systematiquement en bas a droite. il faudrait decouper le labyrinthe en quatre et en fonction de ou on est il va a l'oppose, en gros si on est en bas a droite il va en haut a gauche etc
+refaire le visuel des menus pause et cheat
