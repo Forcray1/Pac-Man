@@ -106,13 +106,12 @@ class PacMan(Entity):
         )
         self.ghosts_eaten_in_combo = 0  # Reset the combo
 
-    def eat_ghost(self) -> int:
+    def eat_ghost(self, base_points: int = 200) -> int:
         """
         Point logic when Pac-Man eats a frightened ghost.
         Returns the number of points earned for this ghost.
         """
-        # First ghost is worth 200, second 400, then 800, then 1600.
-        points: int = 200 * (2 ** self.ghosts_eaten_in_combo)
+        points: int = base_points * (2 ** self.ghosts_eaten_in_combo)
         self.score += points
         self.ghosts_eaten_in_combo += 1
         return points

@@ -407,7 +407,8 @@ class Monitor:
                 ghost.pos == self.player.prev_pos
             ):
                 if ghost.eatable:
-                    self.player.eat_ghost()
+                    base = int(self.config.get("points_per_ghost", 200))
+                    self.player.eat_ghost(base)
                     ghost.is_eaten()
                 elif self.collision and not self.player.god_mode:
                     self.player.die()

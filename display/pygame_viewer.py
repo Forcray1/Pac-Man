@@ -51,6 +51,9 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                 "cheat_mode": config.get("cheat_mode", False),
                 "level": int(config.get("level", 1)),
                 "difficulty": int(config.get("difficulty", 1)),
+                "points_per_ghost": int(
+                    config.get("points_per_ghost", 200)
+                ),
             }
             practice_raw = str(
                 config.get("practice", "False")

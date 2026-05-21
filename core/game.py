@@ -42,7 +42,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     return "quit"
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
+                    if event.key in (pygame.K_ESCAPE, pygame.K_p):
                         if self.viewer._run_pause_menu() == "quit":
                             return "quit"
                     cheat_enabled = self.config.get("cheat_mode", False)
@@ -50,7 +50,7 @@ class Game:
                         self.monitor.player.god_mode = (
                             not self.monitor.player.god_mode
                         )
-                    if event.key == pygame.K_c:
+                    if cheat_enabled and event.key == pygame.K_c:
                         if self.viewer._run_cheat_menu() == "next_level":
                             return "win"
 

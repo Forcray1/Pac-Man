@@ -3,11 +3,11 @@ CODE = entities display core
 install:
 	uv sync
 
-run:$
-	uv run python -m pac-man config.json
+run:
+	uv run python pac-man.py config.json
 
 debug:
-	uv run python -m pdb pac-man config.json
+	uv run python -m pdb pac-man.py config.json
 
 clean:
 	rm -rf .venv

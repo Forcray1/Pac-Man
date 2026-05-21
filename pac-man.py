@@ -7,7 +7,12 @@ from display.pygame_viewer import PygameViewer
 
 def main() -> None:
     if len(sys.argv) != 2:
-        return
+        print(
+            "Usage: python pac-man.py <config_file>\n"
+            "Example: python pac-man.py config.json",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     else:
         config_file = f"config/{sys.argv[1]}"
         config_path = os.path.join(os.path.dirname(__file__), config_file)

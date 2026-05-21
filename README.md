@@ -123,6 +123,7 @@ Timeline :
 		- Added the reroll of the maze when half of the requiered time is used at level 5
 		- Adapted the project to respect mypy and flake8
 		- Small Re design of the pause and cheat window
+		- Corrected some incoherences between the code and the subject, such as the cheat menu when cheatmod off, or points_per_ghosts partially ignored
 		
 
 # Edits since last commit:
