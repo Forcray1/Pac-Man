@@ -213,13 +213,14 @@ class ScreensMixin:
 
     def _run_pause_menu(self) -> str:
         """Overlay pause menu. Returns 'resume' or 'quit'."""
-        font_title = pygame.font.SysFont("Arial", 52, bold=True)
-        font_item = pygame.font.SysFont("Arial", 36)
-        font_hint = pygame.font.SysFont("Arial", 20)
-        items = ["Resume", "Exit to Main Menu"]
+        font_title = pygame.font.SysFont("Courier New", 46, bold=True)
+        font_item = pygame.font.SysFont("Courier New", 28, bold=True)
+        font_hint = pygame.font.SysFont("Courier New", 16)
+        items = ["RESUME", "EXIT TO MAIN MENU"]
         actions = ["resume", "quit"]
         selected = 0
         clock = pygame.time.Clock()
+        blink_timer = 0
 
         # Capture the current game frame to use as background
         background = self.screen.copy()
@@ -233,60 +234,65 @@ class ScreensMixin:
                         return "resume"
                     if event.key == pygame.K_UP:
                         selected = (selected - 1) % len(items)
+                        blink_timer = 0
                     elif event.key == pygame.K_DOWN:
                         selected = (selected + 1) % len(items)
+                        blink_timer = 0
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                         return actions[selected]
 
+            blink_timer += 1
             w, h = self.screen.get_size()
+            cy = h // 2
 
-            # Draw the frozen game frame underneath
+            # Frozen game frame + dark overlay
             self.screen.blit(background, (0, 0))
-
-            # Semi-transparent dark overlay
             overlay = pygame.Surface((w, h), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 160))
+            overlay.fill((0, 0, 0, 190))
             self.screen.blit(overlay, (0, 0))
 
-            # Panel box
-            box_w, box_h = 340, 220
-            box_x = (w - box_w) // 2
-            box_y = (h - box_h) // 2
-            pygame.draw.rect(
-                self.screen, (30, 30, 60),
-                (box_x, box_y, box_w, box_h), border_radius=12,
-            )
-            pygame.draw.rect(
-                self.screen, (255, 255, 0),
-                (box_x, box_y, box_w, box_h), width=3, border_radius=12,
-            )
-
+            # Title
             self._draw_centered(
-                "PAUSED", font_title, (255, 255, 0), box_y + 18
+                "- PAUSED -", font_title, (255, 255, 0), cy - 80
             )
 
+            # Blue separator (matches maze wall colour)
+            sep_x1, sep_x2 = w // 4, 3 * w // 4
+            pygame.draw.line(
+                self.screen, (33, 33, 255),
+                (sep_x1, cy - 32), (sep_x2, cy - 32), 2,
+            )
+
+            # Menu items
             for i, label in enumerate(items):
-                color = (255, 255, 0) if i == selected else (200, 200, 200)
-                prefix = "> " if i == selected else "  "
+                if i == selected:
+                    show_arrow = (blink_timer // 15) % 2 == 0
+                    prefix = "> " if show_arrow else "  "
+                    color: tuple[int, int, int] = (255, 255, 0)
+                else:
+                    prefix = "  "
+                    color = (200, 200, 200)
                 self._draw_centered(
                     f"{prefix}{label}", font_item, color,
-                    box_y + 100 + i * 54,
+                    cy - 16 + i * 44,
                 )
 
+            # Hint
             self._draw_centered(
-                "ESC / P  -  resume",
-                font_hint, (100, 100, 100), box_y + box_h + 8,
+                "ESC / P  -  RESUME",
+                font_hint, (100, 100, 100), h - 36,
             )
 
             pygame.display.flip()
             clock.tick(30)
 
     def _run_cheat_menu(self) -> str:
-        font_title = pygame.font.SysFont("Arial", 52, bold=True)
-        font_item = pygame.font.SysFont("Arial", 36)
-        font_hint = pygame.font.SysFont("Arial", 20)
+        font_title = pygame.font.SysFont("Courier New", 46, bold=True)
+        font_item = pygame.font.SysFont("Courier New", 26, bold=True)
+        font_hint = pygame.font.SysFont("Courier New", 16)
         selected = 0
         clock = pygame.time.Clock()
+        blink_timer = 0
 
         background = self.screen.copy()
 
@@ -299,8 +305,10 @@ class ScreensMixin:
                         return "resume"
                     if event.key == pygame.K_UP:
                         selected = (selected - 1) % 4
+                        blink_timer = 0
                     elif event.key == pygame.K_DOWN:
                         selected = (selected + 1) % 4
+                        blink_timer = 0
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                         if selected == 0:
                             self.monitor.collision = (
@@ -315,53 +323,55 @@ class ScreensMixin:
                         elif selected == 3:
                             return "resume"
 
+            blink_timer += 1
             collision_tag = "[OFF]" if self.monitor.collision else "[ON]"
             ghosts_tag = "[ON]" if self.monitor.ghosts_frozen else "[OFF]"
             display_items = [
-                f"No collision  {collision_tag}",
-                f"Pause ghosts  {ghosts_tag}",
-                "Next level",
-                "Resume",
+                f"NO COLLISION  {collision_tag}",
+                f"PAUSE GHOSTS  {ghosts_tag}",
+                "NEXT LEVEL",
+                "RESUME",
             ]
 
             w, h = self.screen.get_size()
+            cy = h // 2
 
-            # Draw the frozen game frame underneath
+            # Frozen game frame + dark overlay
             self.screen.blit(background, (0, 0))
-
-            # Semi-transparent dark overlay
             overlay = pygame.Surface((w, h), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 160))
+            overlay.fill((0, 0, 0, 190))
             self.screen.blit(overlay, (0, 0))
 
-            # Panel box
-            box_w, box_h = 380, 310
-            box_x = (w - box_w) // 2
-            box_y = (h - box_h) // 2
-            pygame.draw.rect(
-                self.screen, (30, 30, 60),
-                (box_x, box_y, box_w, box_h), border_radius=12,
-            )
-            pygame.draw.rect(
-                self.screen, (255, 255, 0),
-                (box_x, box_y, box_w, box_h), width=3, border_radius=12,
-            )
-
+            # Title
             self._draw_centered(
-                "CHEATS", font_title, (255, 255, 0), box_y + 18
+                "- CHEATS -", font_title, (255, 255, 0), cy - 100
             )
 
+            # Blue separator
+            sep_x1, sep_x2 = w // 4, 3 * w // 4
+            pygame.draw.line(
+                self.screen, (33, 33, 255),
+                (sep_x1, cy - 52), (sep_x2, cy - 52), 2,
+            )
+
+            # Menu items
             for i, label in enumerate(display_items):
-                color = (255, 255, 0) if i == selected else (200, 200, 200)
-                prefix = "> " if i == selected else "  "
+                if i == selected:
+                    show_arrow = (blink_timer // 15) % 2 == 0
+                    prefix = "> " if show_arrow else "  "
+                    item_color: tuple[int, int, int] = (255, 255, 0)
+                else:
+                    prefix = "  "
+                    item_color = (200, 200, 200)
                 self._draw_centered(
-                    f"{prefix}{label}", font_item, color,
-                    box_y + 100 + i * 54,
+                    f"{prefix}{label}", font_item, item_color,
+                    cy - 36 + i * 40,
                 )
 
+            # Hint
             self._draw_centered(
-                "ESC  -  back",
-                font_hint, (100, 100, 100), box_y + box_h + 8,
+                "ESC  -  BACK",
+                font_hint, (100, 100, 100), h - 36,
             )
 
             pygame.display.flip()

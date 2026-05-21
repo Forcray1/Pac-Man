@@ -122,6 +122,7 @@ Timeline :
 		- All cheats implemented, and staying on throughout the levels
 		- Added the reroll of the maze when half of the requiered time is used at level 5
 		- Adapted the project to respect mypy and flake8
+		- Small Re design of the pause and cheat window
 		
 
 # Edits since last commit:
