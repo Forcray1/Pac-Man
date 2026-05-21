@@ -4,6 +4,7 @@ import time
 
 import pygame
 
+from core.game import Game
 from core.monitor import Monitor
 from core.scores import ScoreManager
 from display._maze_utils import _FastMazeGenerator, _maze_cache
@@ -189,100 +190,23 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                         break
         pygame.quit()
 
-    def _reset_level(self, spawn_x: int, spawn_y: int) -> None:
-        """
-        Reset state after losing a life.
-
-        need to implement full reset.
-        """
-        self.reset = True
-        p = self.monitor.player
-        p.is_dying = False
-        p.direction = (0, 0)
-        p.next_direction = (0, 0)
-        p.move_accumulator = 0.0
-        p.death_start_time = 0
-        p.is_powered_up = False
-        p.power_timer = 0
-        p.set_position(spawn_x, spawn_y)
-        for ghost in self.monitor.ghosts:
-            ghost.reset()
-
     def _run_game(self, level: int = 1) -> str:
-        """
-        Game loop. Returns 'win', 'lose', or 'quit'.
-        """
-        clock = pygame.time.Clock()
-        fps = 30
-        max_time: int = int(self.config.get("level_max_time", 90))
-        elapsed = 0
-        death_timer = 0
-        spawn_x = self.monitor.player.x
-        spawn_y = self.monitor.player.y
+        """Delegate the game loop to Game and return its result."""
+        return Game(self.monitor, self.config, self, level).run()
 
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return "quit"
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        pause_result = self._run_pause_menu()
-                        if pause_result == "quit":
-                            return "quit"
-                        # "resume" — just continue the game loop
-                    cheat_enabled = self.config.get(
-                        "cheat_mode", False)
-                    if cheat_enabled and event.key == pygame.K_g:
-                        self.monitor.player.god_mode = (
-                            not self.monitor.player.god_mode)
-                    if event.key == pygame.K_c:
-                        if self._run_cheat_menu() == "next_level":
-                            return "win"
-                        # "resume" → continue the game loop
-
-            if not self.monitor.player.is_dying:
-                keys = pygame.key.get_pressed()
-                if keys[pygame.K_UP] or keys[pygame.K_w]:
-                    self.monitor.player.set_direction(0, -1)
-                if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-                    self.monitor.player.set_direction(0, 1)
-                if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-                    self.monitor.player.set_direction(-1, 0)
-                if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-                    self.monitor.player.set_direction(1, 0)
-
-            self.monitor.update()
-            elapsed += 1
-
-            if self.monitor.is_cleared():
-                return "win"
-            if elapsed >= max_time * fps:
-                # Time is up: lose a life, then reset or game over
-                self.monitor.player.die()
-                if self.monitor.player.lives <= 0:
-                    return "lose"
-                elapsed = 0
-                self._reset_level(spawn_x, spawn_y)
-                continue
-
-            if self.monitor.player.is_dying:
-                death_timer += 1
-                if death_timer >= 40:  # ~1.3 s at 30 FPS
-                    death_timer = 0
-                    if self.monitor.player.lives <= 0:
-                        return "lose"
-                    self._reset_level(spawn_x, spawn_y)
-
-            self.screen.fill((0, 0, 0))
-            self.draw_maze()
-            self.draw_items()
-            if self.practice:
-                self.draw_ghost_paths()
-            self.draw_ghosts()
-            self.draw_player()
-            self._draw_hud(elapsed, fps, max_time, level)
-            pygame.display.flip()
-            if elapsed == 1 or self.reset:
-                time.sleep(2)
-            self.reset = False
-            clock.tick(fps)
+    def render_frame(
+        self, elapsed: int, fps: int, max_time: int, level: int
+    ) -> None:
+        """Draw one frame to the screen."""
+        self.screen.fill((0, 0, 0))
+        self.draw_maze()
+        self.draw_items()
+        if self.practice:
+            self.draw_ghost_paths()
+        self.draw_ghosts()
+        self.draw_player()
+        self._draw_hud(elapsed, fps, max_time, level)
+        pygame.display.flip()
+        if elapsed == 1 or self.reset:
+            time.sleep(2)
+        self.reset = False

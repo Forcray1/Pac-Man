@@ -304,7 +304,7 @@ class ScreensMixin:
                         elif selected == 3:
                             return "resume"
 
-            collision_tag = "[ON]" if self.monitor.collision else "[OFF]"
+            collision_tag = "[OFF]" if self.monitor.collision else "[ON]"
             ghosts_tag = "[ON]" if self.monitor.ghosts_frozen else "[OFF]"
             display_items = [
                 f"No collision  {collision_tag}",

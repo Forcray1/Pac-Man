@@ -43,7 +43,7 @@ class Monitor:
         self.difficulty: int = self.config.get("difficulty", 0)
         self.level: int = self.config.get("level", 0)
         self.ghosts_frozen: bool = False
-        self.collision: bool = False
+        self.collision: bool = True
 
     # ------------------------------------------------------------------
     # Factory
@@ -354,11 +354,8 @@ class Monitor:
                 if ghost.eatable:
                     self.player.eat_ghost()
                     ghost.is_eaten()
-                else:
-                    if not getattr(self.player,
-                                   "god_mode",
-                                   False) or self.collision:
-                        self.player.die()
+                elif self.collision and not self.player.god_mode:
+                    self.player.die()
 
     def is_cleared(self) -> bool:
         """

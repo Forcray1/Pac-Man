@@ -47,7 +47,33 @@ class HudMixin:
                 god_status = "OFF"
                 color = (255, 255, 255)
 
+            if self.monitor.collision:
+                collision_status = "ON"
+            else:
+                collision_status = "OFF"
+
+            if self.monitor.ghosts_frozen:
+                frozen_status = "ON"
+            else:
+                frozen_status = "OFF"
+
+            cheat_list = {"collision": collision_status,
+                          "frozen": frozen_status
+                          }
+
+            if "ON" in cheat_list.values():
+                cheat_on = True
+                lists = [x for x in cheat_list if cheat_list[x] == "ON"]
+            else:
+                cheat_on = False
+
             cheat_text = f"Cheats: [G] God Mode ({god_status})"
             self.screen.blit(
                 hud_font.render(cheat_text, True, color), (10, bottom_y)
             )
+            if cheat_on:
+                active_cheat_text = f"Active cheats: ({lists})"
+                self.screen.blit(
+                    hud_font.render(active_cheat_text, True, color),
+                    (225, bottom_y)
+                )
