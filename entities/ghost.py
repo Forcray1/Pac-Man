@@ -82,7 +82,7 @@ class Ghost(Entity, ABC):
 
     @staticmethod
     def _reconstruct_path(
-        came_from: dict[tuple, tuple],
+        came_from: dict[tuple[int, int], tuple[int, int]],
         current: tuple[int, int],
     ) -> list[tuple[int, int]]:
         """
@@ -111,10 +111,12 @@ class Ghost(Entity, ABC):
         cols = len(map[0]) if rows else 0
 
         open_set: set[tuple[int, int]] = {start}
-        came_from: dict[tuple, tuple] = {}
+        came_from: dict[tuple[int, int], tuple[int, int]] = {}
 
-        g_score: dict[tuple, float] = {start: 0.0}
-        f_score: dict[tuple, float] = {start: Ghost._heuristic(start, goal)}
+        g_score: dict[tuple[int, int], float] = {start: 0.0}
+        f_score: dict[tuple[int, int], float] = {
+            start: Ghost._heuristic(start, goal)
+        }
 
         while open_set:
             current = min(open_set, key=lambda n: f_score.get(n, float("inf")))
@@ -161,7 +163,7 @@ class Ghost(Entity, ABC):
                       pos: tuple[int, int],
                       monitor: "Monitor",
                       current: str | None = None
-                      ) -> list:
+                      ) -> list[tuple[int, int]]:
         cx, cy = pos
         forbidden_dir = _OPPOSITE.get(current) if current else None
         reachable = []

@@ -1,13 +1,24 @@
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import TYPE_CHECKING, Callable, List, Tuple
 
 import pygame
+
+if TYPE_CHECKING:
+    from core.monitor import Monitor
+    from core.scores import ScoreManager
 
 
 class ScreensMixin:
     """Handles all full-screen UI loops: menu, highscores, instructions, end.
     """
+
+    if TYPE_CHECKING:
+        screen: pygame.Surface
+        sprites: dict[str, pygame.Surface | list[pygame.Surface | None] | None]
+        monitor: Monitor
+        score_manager: ScoreManager
+        _draw_centered: Callable[..., None]
 
     def _run_menu(self) -> str:
         """Main menu. Returns 'play', 'highscores', 'instructions', 'quit'."""

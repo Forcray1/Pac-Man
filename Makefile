@@ -21,7 +21,7 @@ lint:
 
 lint-strict:
 	uv run flake8 $(CODE) pac-man.py
-	uv run mypy $(CODE) pac-man.py --strict
+	uv run mypy $(CODE) pac-man.py --strict --explicit-package-bases
 
 %:
 	@:

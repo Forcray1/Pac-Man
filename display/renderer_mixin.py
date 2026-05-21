@@ -1,14 +1,25 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Callable
+
 import pygame
 
-from core.monitor import WALL
+from core.monitor import WALL, Monitor
 from entities.ghost_types import Blinky, Pinky, Inky, Clyde
 from entities.items import SuperPacgum
 
 
 class RendererMixin:
     """Handles all drawing and window-resize logic."""
+
+    if TYPE_CHECKING:
+        cols: int
+        rows: int
+        sprites: dict[str, pygame.Surface | list[pygame.Surface | None] | None]
+        monitor: Monitor
+        margin: int
+        practice: bool
+        scale_sprites: Callable[[], None]
 
     def get_wall_mask(self, grid: list[list[int]], x: int, y: int) -> int:
         mask = 0

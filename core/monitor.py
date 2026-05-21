@@ -1,8 +1,10 @@
+from typing import Any
+
 from entities.player import PacMan
 from entities.ghost import Ghost
 from entities.ghost_types import Blinky, Inky, Pinky, Clyde
 from entities.items import Pacgum, SuperPacgum
-from display._maze_utils import _FastMazeGenerator, _maze_cache
+from display._maze_utils import _FastMazeGenerator
 
 EMPTY = 0
 WALL = 1
@@ -24,7 +26,7 @@ class Monitor:
         grid: list[list[int]],
         player: PacMan,
         ghosts: list[Ghost] | None = None,
-        config: dict | None = None,
+        config: dict[str, Any] | None = None,
     ) -> None:
         self.grid: list[list[int]] = grid
         self.rows: int = len(grid)
@@ -32,7 +34,7 @@ class Monitor:
 
         self.player: PacMan = player
         self.ghosts: list[Ghost] = ghosts if ghosts is not None else []
-        self.config: dict = config if config is not None else {}
+        self.config: dict[str, Any] = config if config is not None else {}
 
         self.pacgums: list[Pacgum] = []
         self.super_pacgums: list[SuperPacgum] = []
@@ -53,7 +55,7 @@ class Monitor:
         raw_maze: list[list[int]],
         maze_width: int,
         maze_height: int,
-        config: dict | None = None,
+        config: dict[str, Any] | None = None,
     ) -> "Monitor":
         """
         Build a Monitor directly from a MazeGenerator raw maze.
@@ -247,7 +249,7 @@ class Monitor:
         return None
 
     @property
-    def all_items(self) -> list:
+    def all_items(self) -> list[Pacgum | SuperPacgum]:
         """
         All remaining active pac-gums and super pac-gums.
         """

@@ -1,16 +1,26 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 import pygame
+
+if TYPE_CHECKING:
+    from core.monitor import Monitor
 
 
 class HudMixin:
     """Handles on-screen text helpers and the in-game HUD."""
 
+    if TYPE_CHECKING:
+        screen: pygame.Surface
+        monitor: Monitor
+        config: dict[str, Any]
+
     def _draw_centered(
         self,
         text: str,
         font: pygame.font.Font,
-        color: tuple,
+        color: tuple[int, int, int],
         y: int,
     ) -> None:
         """Draw text horizontally centred at vertical position y."""

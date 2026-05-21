@@ -1,5 +1,6 @@
 import json
 import sys
+from typing import Any
 
 VALID_KEYS = {
     "level",
@@ -17,7 +18,7 @@ VALID_KEYS = {
 }
 
 
-def parser(file: str) -> dict:
+def parser(file: str) -> dict[str, Any]:
     try:
         with open(file, "r") as f:
             config_raw = json.load(f)
@@ -152,7 +153,7 @@ def parser(file: str) -> dict:
 
     # Check value of practice
     practice = config.get("practice", "False")
-    files: dict = {
+    files: dict[int, str] = {
         1: "scores/1/highscores.json",
         2: "scores/2/highscores.json",
         3: "scores/3/highscores.json",

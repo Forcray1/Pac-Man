@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from typing import Any
 
 import pygame
 
@@ -15,7 +16,7 @@ from display.sprite_mixin import SpritesMixin
 
 
 class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
-    def __init__(self, config: dict):
+    def __init__(self, config: dict[str, Any]):
         pygame.init()
 
         # --- 1. SCREEN BOUNDS DETECTION ---

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from typing import TYPE_CHECKING
 
 import pygame
 
@@ -9,6 +10,9 @@ from display._maze_utils import _ROOT
 
 class SpritesMixin:
     """Handles image loading and sprite scaling."""
+
+    if TYPE_CHECKING:
+        TILE_SIZE: int
 
     def _load_raw(self, rel_path: str) -> pygame.Surface | None:
         path = os.path.join(_ROOT, "assets", rel_path)

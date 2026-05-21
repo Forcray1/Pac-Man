@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pygame
 
@@ -18,7 +18,7 @@ class Game:
     def __init__(
         self,
         monitor: Monitor,
-        config: dict,
+        config: dict[str, Any],
         viewer: PygameViewer,
         level: int = 1,
     ) -> None:
