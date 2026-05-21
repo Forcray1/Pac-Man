@@ -42,6 +42,8 @@ class Monitor:
         self.start_pacgums: int = len(self.pacgums)
         self.difficulty: int = self.config.get("difficulty", 0)
         self.level: int = self.config.get("level", 0)
+        self.ghosts_frozen: bool = False
+        self.collision: bool = False
 
     # ------------------------------------------------------------------
     # Factory
@@ -129,7 +131,7 @@ class Monitor:
             (1, h_ext - 2),                   # Bas-Gauche
             (w_ext - 2, h_ext - 2)            # Bas-Droite
         ]
-        
+
         super_positions = set()
         for target in corners_targets:
             # On trouve la cellule marchable la plus proche de ce coin
@@ -243,39 +245,40 @@ class Monitor:
         )
 
         # --- GHOSTS SPEED ---
-        for ghost in self.active_ghosts:
-            if self.difficulty == 1:
-                a = 1.0
-            elif self.difficulty <= 3:
-                a = 1.10
-            else:
-                a = 1.25
+        if not self.ghosts_frozen:
+            for ghost in self.active_ghosts:
+                if self.difficulty == 1:
+                    a = 1.0
+                elif self.difficulty <= 3:
+                    a = 1.10
+                else:
+                    a = 1.25
 
-            if ghost.is_dead:
-                # Returns very fast to spawn
-                ghost.speed_multiplier = base_speed * 2.0 * a
-            elif ghost.eatable:
-                # Frighten ghosts are slowed
-                ghost.speed_multiplier = base_speed * 0.75 * a
-            else:
-                # Default speed
-                ghost.speed_multiplier = base_speed * a
+                if ghost.is_dead:
+                    # Returns very fast to spawn
+                    ghost.speed_multiplier = base_speed * 2.0 * a
+                elif ghost.eatable:
+                    # Frighten ghosts are slowed
+                    ghost.speed_multiplier = base_speed * 0.75 * a
+                else:
+                    # Default speed
+                    ghost.speed_multiplier = base_speed * a
 
-                # Elroy mode for Blinky
-                from entities.ghost_types import Blinky as _Blinky
-                if isinstance(ghost, _Blinky):
-                    if remaining_ratio <= 0.10:   # 90% eaten
-                        ghost.speed_multiplier = base_speed * 1.20
-                    elif remaining_ratio <= 0.25:  # 75% eaten
-                        ghost.speed_multiplier = base_speed * 1.10
+                    # Elroy mode for Blinky
+                    from entities.ghost_types import Blinky as _Blinky
+                    if isinstance(ghost, _Blinky):
+                        if remaining_ratio <= 0.10:   # 90% eaten
+                            ghost.speed_multiplier = base_speed * 1.20
+                        elif remaining_ratio <= 0.25:  # 75% eaten
+                            ghost.speed_multiplier = base_speed * 1.10
 
-            ghost.move_accumulator += ghost.speed_multiplier
-            while ghost.move_accumulator >= 1.0:
-                try:
-                    ghost.move(self.grid, self)
-                except Exception:
-                    raise Exception
-                ghost.move_accumulator -= 1.0
+                ghost.move_accumulator += ghost.speed_multiplier
+                while ghost.move_accumulator >= 1.0:
+                    try:
+                        ghost.move(self.grid, self)
+                    except Exception:
+                        raise Exception
+                    ghost.move_accumulator -= 1.0
 
         for item in self.all_items:
             item.update()
@@ -352,7 +355,9 @@ class Monitor:
                     self.player.eat_ghost()
                     ghost.is_eaten()
                 else:
-                    if not getattr(self.player, "god_mode", False):
+                    if not getattr(self.player,
+                                   "god_mode",
+                                   False) or self.collision:
                         self.player.die()
 
     def is_cleared(self) -> bool:

@@ -169,6 +169,8 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                     elif result == "win":
                         score = self.monitor.player.score
                         lives = self.monitor.player.lives
+                        god_mode = self.monitor.player.god_mode
+                        ghosts_frozen = self.monitor.ghosts_frozen
                         current_level += 1
 
                         self._seed = 0
@@ -179,6 +181,8 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
 
                         self.monitor.player.score = score
                         self.monitor.player.lives = lives
+                        self.monitor.player.god_mode = god_mode
+                        self.monitor.ghosts_frozen = ghosts_frozen
                         continue
                     elif result == "lose":
                         self._run_end_screen("lose", self.monitor.player.score)
@@ -221,7 +225,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                 if event.type == pygame.QUIT:
                     return "quit"
                 if event.type == pygame.KEYDOWN:
-                    if event.key in (pygame.K_ESCAPE, pygame.K_p):
+                    if event.key == pygame.K_ESCAPE:
                         pause_result = self._run_pause_menu()
                         if pause_result == "quit":
                             return "quit"
@@ -231,6 +235,10 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                     if cheat_enabled and event.key == pygame.K_g:
                         self.monitor.player.god_mode = (
                             not self.monitor.player.god_mode)
+                    if event.key == pygame.K_c:
+                        if self._run_cheat_menu() == "next_level":
+                            return "win"
+                        # "resume" → continue the game loop
 
             if not self.monitor.player.is_dying:
                 keys = pygame.key.get_pressed()

@@ -112,7 +112,12 @@ Timeline :
 		- Made the win screen working by adding "level" to the config of monitor
 		- Reorganization of the pygame_viewer in multiples files for better understanding
 		- Added the augmentation of the size of the maze for the difficulty 3 and above (+3 for difficulty 3 and 4, and +6 for difficulty 5)
-
+19/05/2026:
+	mlorenzo:
+		- Pause menu implemented
+21/05/2026:
+	mlorenzo:
+		- Cheat menu fully implemented
 
 # Edits since last commit:
 
