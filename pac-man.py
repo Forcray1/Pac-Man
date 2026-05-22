@@ -1,8 +1,10 @@
 import os
 import sys
 
+import pygame
+
 from core.parser import parser
-from display.pygame_viewer import PygameViewer
+from core.redirect import Redirect
 
 
 def main() -> None:
@@ -22,9 +24,9 @@ def main() -> None:
                   file=sys.stderr)
             sys.exit(1)
 
-        viewer: PygameViewer
-        viewer = PygameViewer(config)
-        viewer.display()
+        redirect = Redirect(config, config_path)
+        redirect.main_menu()
+        pygame.quit()
 
 
 if __name__ == "__main__":

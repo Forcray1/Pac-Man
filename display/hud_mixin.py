@@ -84,7 +84,7 @@ class HudMixin:
                 hud_font.render(cheat_text, True, color), (10, bottom_y)
             )
             if cheat_on:
-                active_cheat_text = f"Active cheats: ({lists})"
+                active_cheat_text = f"Active cheats: ({', '.join(lists)})"
                 self.screen.blit(
                     hud_font.render(active_cheat_text, True, color),
                     (225, bottom_y)

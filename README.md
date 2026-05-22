@@ -130,9 +130,16 @@ Timeline :
 		- Did the config.py wich will contain the edit of the config throughout the computer of the Hub of the game
 		- Edits to pass through flake8 and mypy without any issues
 		- Added dynamiic size to text, so that it fill the screen entirely and not only the base text
+		- Finished all the game, missing only the animations and the debugg, and some re-design
 
 # Edits since last commit:
-
+Le jeu est finito
 
 # Edit a faire : 
 refaire le visuel des menus pause et cheat
+refaire le menu de start de pacman
+cacher les hitboxs
+rajouter toutes les animations
+faire README
+faire packages itch.io
+debugg

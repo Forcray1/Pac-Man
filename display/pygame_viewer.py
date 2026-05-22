@@ -194,7 +194,6 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                     elif result == "lose":
                         self._run_end_screen("lose", self.monitor.player.score)
                         break
-        pygame.quit()
 
     def _run_game(self, level: int = 1) -> str:
         """Delegate the game loop to Game and return its result."""
