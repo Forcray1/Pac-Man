@@ -102,13 +102,8 @@ class edited_config:
             if (
                 isinstance(original, str)
                 and original.lower() in ("true", "false")
-            ):
-                config[key] = str(value).strip()
-            elif isinstance(original, bool):
-                low = str(value).strip().lower()
-                config[key] = low not in (
-                    "0", "false", "no", ""
-                )
+            ) or isinstance(original, bool):
+                config[key] = str(value).strip().capitalize()
             elif isinstance(original, int):
                 config[key] = int(value)
             elif isinstance(original, float):
@@ -259,11 +254,15 @@ class edited_config:
         """
         Overlay a CRT-style stepper for integer fields.
         UP / DOWN arrows (or hold) increment / decrement the value.
-        Value is clamped to [0, sys.maxsize].
+        Reaching 0 and pressing DOWN wraps to the maximum.
+        'difficulty' is capped at 5; all other fields at sys.maxsize.
         Returns the new int, or None on ESC.
         """
         import sys as _sys
-        INT_MAX = _sys.maxsize
+
+        # Per-key maximum
+        _CAPS: dict[str, int] = {"difficulty": 5}
+        INT_MAX = _CAPS.get(key, _sys.maxsize)
 
         w, h = self.screen.get_size()
         clock = pygame.time.Clock()
@@ -290,7 +289,12 @@ class edited_config:
         HOLD_REPEAT = 3  # frames between repeats while held
 
         def apply_delta(v: int, delta: int) -> int:
-            return max(0, min(INT_MAX, v + delta))
+            result = v + delta
+            if result < 0:
+                return INT_MAX   # wrap downward
+            if result > INT_MAX:
+                return 0         # wrap upward
+            return result
 
         while True:
             delta = 0
@@ -390,6 +394,21 @@ class edited_config:
                 dn,
                 (bx + bw // 2 - dn.get_width() // 2,
                  by + 148),
+            )
+
+            # Cap label
+            cap_txt = (
+                f"max: {INT_MAX}"
+                if INT_MAX < _sys.maxsize
+                else "min: 0"
+            )
+            cap_surf = font_hnt.render(
+                cap_txt, True, _DIM
+            )
+            self.screen.blit(
+                cap_surf,
+                (bx + bw - cap_surf.get_width() - 12,
+                 by + 58),
             )
 
             hnt = font_hnt.render(
