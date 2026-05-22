@@ -34,7 +34,6 @@ class Game:
         max_time: int = int(self.config.get("level_max_time", 90))
         elapsed = 0
         death_timer = 0
-        time_up = False
         spawn_x = self.monitor.player.x
         spawn_y = self.monitor.player.y
 
@@ -76,7 +75,6 @@ class Game:
                     self.monitor._change_maze()
             if elapsed >= max_time * fps and not self.monitor.player.is_dying:
                 self.monitor.player.die()
-                time_up = True
 
             if self.monitor.player.is_dying:
                 death_timer += 1
@@ -85,7 +83,6 @@ class Game:
                     if self.monitor.player.lives <= 0:
                         return "lose"
                     elapsed = 0
-                    time_up = False
                     self._reset_level(spawn_x, spawn_y)
 
             self.viewer.render_frame(elapsed, fps, max_time, self.level)
