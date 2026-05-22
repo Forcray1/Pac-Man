@@ -2,5 +2,9 @@
 	{
 		"name": "test",
 		"score": 12000
+	},
+	{
+		"name": "test",
+		"score": 0
 	}
 ]

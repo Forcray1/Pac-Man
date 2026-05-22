@@ -213,5 +213,9 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         self._draw_hud(elapsed, fps, max_time, level)
         pygame.display.flip()
         if elapsed == 1 or self.reset:
+            pygame.event.set_blocked(None)
             time.sleep(2)
+            pygame.event.set_allowed(None)
+            pygame.event.pump()
+            pygame.event.clear()
         self.reset = False

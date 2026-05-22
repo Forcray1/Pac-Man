@@ -5,6 +5,7 @@ import sys
 from typing import Any
 
 from core.config import edited_config
+from core.parser import parser
 from display.pygame_viewer import PygameViewer
 
 
@@ -327,6 +328,9 @@ class Redirect:
 
         with open(self.config_path, "w", encoding="utf-8") as f:
             json.dump(updated, f, indent="\t")
+        parsed = parser(self.config_path)
+        if parsed:
+            self.config = parsed
         self.launch_animation(anim_path, 30, reverse=True)
 
     def on_fan(self) -> None:

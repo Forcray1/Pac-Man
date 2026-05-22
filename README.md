@@ -131,6 +131,8 @@ Timeline :
 		- Edits to pass through flake8 and mypy without any issues
 		- Added dynamiic size to text, so that it fill the screen entirely and not only the base text
 		- Finished all the game, missing only the animations and the debugg, and some re-design
+		- Perfected parsing with files verifs, and warning for unknown key(s)
+		- Instructions were stackable during the freeze at the start of each level, corrected by clearing the events at the end of the time sleep in pygame_viewer.py
 
 # Edits since last commit:
 Le jeu est finito
@@ -143,3 +145,5 @@ rajouter toutes les animations
 faire README
 faire packages itch.io
 debugg
+
+j'ai trouver un bug que j'arrive pas a corriger, si tu spam c quand tu respawn ca bug, mais si tu coupe et clear pas les instructions, elles se stacks les une sur les autres, si tu trovue comment le corriger ca m'arrange sinon nsm

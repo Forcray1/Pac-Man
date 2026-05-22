@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from typing import Any
 
@@ -23,21 +24,23 @@ def parser(file: str) -> dict[str, Any]:
         with open(file, "r") as f:
             config_raw = json.load(f)
     except FileNotFoundError:
-        print("ERROR: File not found", file=sys.stderr)
+        print("ERROR: File not found\n", file=sys.stderr)
         return {}
     except Exception as e:
-        print(f"ERROR: Error while parsing the file {file}:\n{e}",
+        print(f"ERROR: Error while parsing the file {file}:\n{e}\n",
               file=sys.stderr)
         return {}
     missing_keys = VALID_KEYS - set(config_raw.keys())
     if missing_keys:
-        print(f"Missing config key(s): {missing_keys}",
+        print(f"Missing config key(s): {missing_keys}\n",
               file=sys.stderr)
         return {}
     config = {}
     for key, value in config_raw.items():
         if key in VALID_KEYS:
             config[key] = value
+        else:
+            print(f"WARNING: Unknown key '{key}' ignored\n", file=sys.stderr)
     # Check value of level
     levels = config["level"]
     try:
@@ -46,7 +49,7 @@ def parser(file: str) -> dict[str, Any]:
             raise ValueError
     except Exception:
         print(f"ERROR: The level amount has to be a positive"
-              f"integer ({levels})",
+              f" integer ({levels})\n",
               file=sys.stderr)
         return {}
     # Check value of width
@@ -56,7 +59,7 @@ def parser(file: str) -> dict[str, Any]:
             raise ValueError
     except Exception:
         print(f"ERROR: The width has to be a positive integer greater"
-              f" than 3 ({config['width']})",
+              f" than 3 ({config['width']})\n",
               file=sys.stderr)
         return {}
     # Check value of height
@@ -66,7 +69,7 @@ def parser(file: str) -> dict[str, Any]:
             raise ValueError
     except Exception:
         print(f"ERROR: The height has to be a positive integer greater"
-              f" than 3 ({config['height']})",
+              f" than 3 ({config['height']})\n",
               file=sys.stderr)
         return {}
     # Check value of difficulty
@@ -76,7 +79,7 @@ def parser(file: str) -> dict[str, Any]:
             raise ValueError
     except Exception:
         print(f"ERROR: The difficulty has to be a positive integer between"
-              f" 1 (normal) and 5 (really hard) ({config['difficulty']})",
+              f" 1 (normal) and 5 (really hard) ({config['difficulty']})\n",
               file=sys.stderr)
         return {}
     # Check value of points_per_pacgum
@@ -86,7 +89,7 @@ def parser(file: str) -> dict[str, Any]:
             raise ValueError
     except Exception:
         print("ERROR: The points_per_pacgum has to be a positive integer"
-              " or zero",
+              " or zero\n",
               file=sys.stderr)
         return {}
     # Check value of points_per_super_pacgum
@@ -96,7 +99,7 @@ def parser(file: str) -> dict[str, Any]:
             raise ValueError
     except Exception:
         print(f"ERROR: The points per super pacgum has to be a positive "
-              f"integer or zero ({config['points_per_super_pacgum']})",
+              f"integer or zero ({config['points_per_super_pacgum']})\n",
               file=sys.stderr)
         return {}
     # Check value of points_per_ghost
@@ -105,23 +108,25 @@ def parser(file: str) -> dict[str, Any]:
         if points_per_ghost < 0:
             raise ValueError
     except Exception:
-        print(f"ERROR: The points per ghost has to be a positive "
-              f"integer or zero ({config['points_per_ghost']})",
+        print(f"ERROR: The points per ghost has to be a positive"
+              f" integer or zero ({config['points_per_ghost']})\n",
               file=sys.stderr)
         return {}
     # Check value of seed
     try:
         seed = int(config["seed"])
     except Exception:
-        print(f"ERROR: The seed isn't valid ({config['seed']})",
+        print(f"ERROR: The seed isn't valid ({config['seed']})\n",
               file=sys.stderr)
         return {}
     # Check value of time
     try:
         time = int(config["level_max_time"])
+        if time <= 0:
+            raise ValueError
     except Exception:
         print(f"ERROR: The time per level must be a positive integer "
-              f"({config['time']})",
+              f"({config['level_max_time']})\n",
               file=sys.stderr)
         return {}
     # Check value of cheat mode
@@ -133,12 +138,12 @@ def parser(file: str) -> dict[str, Any]:
             cheat = False
         else:
             print(f"ERROR: The cheat mode have to be either "
-                  f"'True' or 'False' ({cheat})",
+                  f"'True' or 'False' ({cheat})\n",
                   file=sys.stderr)
             return {}
     elif not isinstance(cheat, bool):
         print(f"ERROR: The cheat mode have to be either "
-              f"'True' or 'False' ({cheat})",
+              f"'True' or 'False' ({cheat})\n",
               file=sys.stderr)
         return {}
     # Check value of super time
@@ -148,7 +153,7 @@ def parser(file: str) -> dict[str, Any]:
             raise ValueError
     except Exception:
         print(f"ERROR: The time for super mode has to be a positive integer or"
-              f"zero ({config['super_time']})", file=sys.stderr)
+              f" zero ({config['super_time']})\n", file=sys.stderr)
         return {}
 
     # Check value of practice
@@ -161,6 +166,22 @@ def parser(file: str) -> dict[str, Any]:
         5: "scores/5/highscores.json"
     }
     filename = files.get(difficulty)
+
+    # Check scores file: create it (with empty list) if missing,
+    # error if not accessible
+    if filename is not None:
+        try:
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            if not os.path.exists(filename):
+                with open(filename, "w", encoding="utf-8") as f:
+                    json.dump([], f)
+            else:
+                with open(filename, "r+", encoding="utf-8") as f:
+                    pass
+        except OSError as e:
+            print(f"ERROR: Cannot access scores file '{filename}': {e}\n",
+                  file=sys.stderr)
+            return {}
 
     config_final = {
         "highscore_filename": filename,

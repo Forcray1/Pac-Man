@@ -49,7 +49,7 @@ class edited_config:
         """
         self._crt_power_on()
 
-        keys = list(config.keys())
+        keys = [k for k in config.keys() if k != "seed"]
         selected = 0
         blink = 0
         clock = pygame.time.Clock()
@@ -264,9 +264,14 @@ class edited_config:
         """
         import sys as _sys
 
-        # Per-key maximum
+        # Per-key maximum / minimum
         _CAPS: dict[str, int] = {"difficulty": 5}
+        _MINS: dict[str, int] = {"width": 3,
+                                 "height": 3,
+                                 "difficulty": 1,
+                                 "level": 1}
         INT_MAX = _CAPS.get(key, _sys.maxsize)
+        INT_MIN = _MINS.get(key, 0)
 
         w, h = self.screen.get_size()
         clock = pygame.time.Clock()
@@ -294,10 +299,10 @@ class edited_config:
 
         def apply_delta(v: int, delta: int) -> int:
             result = v + delta
-            if result < 0:
+            if result < INT_MIN:
                 return INT_MAX   # wrap downward
             if result > INT_MAX:
-                return 0         # wrap upward
+                return INT_MIN   # wrap upward
             return result
 
         while True:
@@ -404,7 +409,7 @@ class edited_config:
             cap_txt = (
                 f"max: {INT_MAX}"
                 if INT_MAX < _sys.maxsize
-                else "min: 0"
+                else f"min: {INT_MIN}"
             )
             cap_surf = font_hnt.render(
                 cap_txt, True, _DIM
