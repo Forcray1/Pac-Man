@@ -81,31 +81,31 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         self.cols = len(self.monitor.grid[0])
 
         # --- 2. AUTO-COMPUTE TILE SIZE ---
-        # We want the maze to occupy at most 85% of the screen height
-        available_w = screen_max_w * 0.85
-        available_h = screen_max_h * 0.85
+        # Tile size is computed so the maze fits inside the full screen,
+        # leaving a margin on each side.
+        available_w = screen_max_w - (2 * self.margin)
+        available_h = screen_max_h - (2 * self.margin)
         # Compute the maximum tile size that fits in HEIGHT
-        tile_h = int((available_h - (2 * self.margin)) // self.rows)
+        tile_h = int(available_h // self.rows)
         # Compute the maximum tile size that fits in WIDTH
-        tile_w = int((available_w - (2 * self.margin)) // self.cols)
+        tile_w = int(available_w // self.cols)
 
         # TAKE THE MINIMUM OF THE TWO
         # Crucial step: by taking the minimum, we ensure the maze fits
         # both the width AND the height of the screen.
         self.TILE_SIZE = max(12, min(tile_h, tile_w, 48))
 
-        # --- 3. WINDOW DIMENSIONS ---
-        self.screen_width = (self.cols * self.TILE_SIZE) + (2 * self.margin)
-        self.screen_height = (self.rows * self.TILE_SIZE) + (2 * self.margin)
-
-        self.screen = pygame.display.set_mode(
-            (self.screen_width, self.screen_height), pygame.RESIZABLE
-        )
+        # --- 3. FULLSCREEN WINDOW ---
+        # Pass (0, 0) so pygame uses the current desktop resolution.
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         pygame.display.set_caption("Pac-Man - Pygame Viewer")
 
-        # --- 4. DYNAMIC CENTERING ---
-        # Use get_size() in case the OS forced a slightly different size
+        # Store the actual fullscreen dimensions for later reuse.
         actual_w, actual_h = self.screen.get_size()
+        self.screen_width = actual_w
+        self.screen_height = actual_h
+
+        # --- 4. DYNAMIC CENTERING ---
         self.offset_x = (actual_w - (self.cols * self.TILE_SIZE)) // 2
         self.offset_y = (actual_h - (self.rows * self.TILE_SIZE)) // 2
 

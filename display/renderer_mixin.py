@@ -192,24 +192,20 @@ class RendererMixin:
                         # Fallback floor
 
     def _update_dimensions(self, new_tile_size: int) -> None:
-        """Update the tile size and resize the window accordingly."""
+        """
+        Update the tile size and re-centre the maze; window stays fullscreen.
+        """
         # Safety guard to avoid tiny tiles
         self.TILE_SIZE = max(4, new_tile_size)
 
-        # Recompute screen size
-        self.screen_width = (self.cols * self.TILE_SIZE) + (2 * self.margin)
-        self.screen_height = (self.rows * self.TILE_SIZE) + (2 * self.margin)
+        # The window is fullscreen — use the actual surface size.
+        actual_w, actual_h = self.screen.get_size()
+        self.screen_width = actual_w
+        self.screen_height = actual_h
 
-        # Apply the new video mode
-        self.screen = pygame.display.set_mode(
-            (self.screen_width, self.screen_height), pygame.RESIZABLE
-        )
-
-        # Re-centre and rescale sprites
-        self.offset_x = (self.screen_width - (self.cols * self.TILE_SIZE)) // 2
-        self.offset_y = (
-            self.screen_height - (self.rows * self.TILE_SIZE)
-        ) // 2
+        # Re-centre the maze in the fullscreen window
+        self.offset_x = (actual_w - (self.cols * self.TILE_SIZE)) // 2
+        self.offset_y = (actual_h - (self.rows * self.TILE_SIZE)) // 2
         self.scale_sprites()
 
     def draw_items(self) -> None:

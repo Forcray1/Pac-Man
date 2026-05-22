@@ -124,7 +124,10 @@ Timeline :
 		- Adapted the project to respect mypy and flake8
 		- Small Re design of the pause and cheat window
 		- Corrected some incoherences between the code and the subject, such as the cheat menu when cheatmod off, or points_per_ghosts partially ignored
-		
+22/05/2026:
+	mlorenzo:
+		- Edited the windows to be full screen at all time
+		- Did the config.py wich will contain the edit of the config throughout the computer of the Hub of the game
 
 # Edits since last commit:
 

@@ -85,10 +85,8 @@ def draw_retro_button(
 def main() -> None:
     pygame.init()
 
-    # Window configuration (resizable)
-    screen_info = pygame.display.Info()
-    sw, sh = int(screen_info.current_w * 0.6), int(screen_info.current_h * 0.6)
-    screen = pygame.display.set_mode((sw, sh), pygame.RESIZABLE)
+    # Window configuration (fullscreen)
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     pygame.display.set_caption("Retro Menu 90s")
 
     # Font (Monospace gives a terminal/old PC look)
@@ -107,9 +105,6 @@ def main() -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.VIDEORESIZE:
-                screen = pygame.display.set_mode((event.w, event.h),
-                                                 pygame.RESIZABLE)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Simplified click logic
                 for i in range(len(options)):

@@ -1,7 +1,7 @@
 {
-	"level": 2,
-	"width": 5,
-	"height": 5,
+	"level": 3,
+	"width": 20,
+	"height": 20,
 	"difficulty": 5,
 	"points_per_pacgum": 50,
 	"points_per_super_pacgum": 100,
@@ -11,5 +11,5 @@
 	"cheat_mode": "True",
 	"display_mode": 2,
 	"super_time": 10,
-	"practice": "True"
+	"practice": "False"
 }
