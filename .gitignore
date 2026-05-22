@@ -1,11 +1,12 @@
+.gitignore
 .DS_Store
 
 __pycache__
+.mypy_cache/
 
 .venv/
 venv/
 env/
 
 GameFootage
-BaseAnimation
 TransitionToArcade
