@@ -9,7 +9,6 @@
 	"seed": 42,
 	"level_max_time": 90,
 	"cheat_mode": "True",
-	"display_mode": 2,
 	"super_time": 10,
 	"practice": "False"
 }
