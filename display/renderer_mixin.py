@@ -15,6 +15,7 @@ class RendererMixin:
     if TYPE_CHECKING:
         cols: int
         rows: int
+        screen: pygame.Surface
         sprites: dict[str, pygame.Surface | list[pygame.Surface | None] | None]
         monitor: Monitor
         margin: int

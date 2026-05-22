@@ -22,8 +22,11 @@ class ScreensMixin:
 
     def _run_menu(self) -> str:
         """Main menu. Returns 'play', 'highscores', 'instructions', 'quit'."""
-        font_title = pygame.font.SysFont("Arial", 56, bold=True)
-        font_item = pygame.font.SysFont("Arial", 34)
+        _w, _h = self.screen.get_size()
+        font_title = pygame.font.SysFont(
+            "Arial", max(16, _h * 56 // 1080), bold=True)
+        font_item = pygame.font.SysFont("Arial", max(12, _h * 34 // 1080))
+        _item_gap = max(20, _h * 52 // 1080)
         items = [
             "Start Game", "View Highscores",
             "Instructions", "Exit",
@@ -79,16 +82,22 @@ class ScreensMixin:
                 color = (255, 255, 0) if i == selected else (200, 200, 200)
                 prefix = "> " if i == selected else "  "
                 self._draw_centered(
-                    f"{prefix}{label}", font_item, color, h // 2 + i * 52,
+                    f"{prefix}{label}", font_item, color,
+                    h // 2 + i * _item_gap,
                 )
             pygame.display.flip()
             clock.tick(30)
 
     def _run_highscores(self) -> None:
         """Show top-10 leaderboard. ENTER or ESC to go back."""
-        font_title = pygame.font.SysFont("Arial", 44, bold=True)
-        font_row = pygame.font.SysFont("Courier New", 26)
-        font_hint = pygame.font.SysFont("Arial", 22)
+        _w, _h = self.screen.get_size()
+        font_title = pygame.font.SysFont(
+            "Arial", max(14, _h * 44 // 1080), bold=True)
+        font_row = pygame.font.SysFont("Courier New", max(10, _h * 26 // 1080))
+        font_hint = pygame.font.SysFont("Arial", max(10, _h * 22 // 1080))
+        _title_y = max(10, _h * 30 // 1080)
+        _row_start = max(50, _h * 100 // 1080)
+        _row_gap = max(14, _h * 36 // 1080)
         clock = pygame.time.Clock()
 
         while True:
@@ -101,7 +110,8 @@ class ScreensMixin:
 
             self.screen.fill((0, 0, 0))
             _, h = self.screen.get_size()
-            self._draw_centered("HIGH SCORES", font_title, (255, 255, 0), 30)
+            self._draw_centered(
+                "HIGH SCORES", font_title, (255, 255, 0), _title_y)
             scores = self.score_manager.top_scores()
             if not scores:
                 self._draw_centered(
@@ -111,18 +121,25 @@ class ScreensMixin:
                 for i, (name, score) in enumerate(scores):
                     line = f"{i + 1:2}.  {name:<10}  {score:>8}"
                     self._draw_centered(
-                        line, font_row, (255, 255, 255), 100 + i * 36,
+                        line, font_row, (255, 255, 255),
+                        _row_start + i * _row_gap,
                     )
             self._draw_centered(
-                "ENTER or ESC  -  back", font_hint, (120, 120, 120), h - 50,
+                "ENTER or ESC  -  back",
+                font_hint, (120, 120, 120), h - _h * 50 // 1080,
             )
             pygame.display.flip()
             clock.tick(30)
 
     def _run_instructions(self) -> None:
         """Show controls and rules. ENTER or ESC to go back."""
-        font_title = pygame.font.SysFont("Arial", 44, bold=True)
-        font_body = pygame.font.SysFont("Arial", 24)
+        _w, _h = self.screen.get_size()
+        font_title = pygame.font.SysFont(
+            "Arial", max(14, _h * 44 // 1080), bold=True)
+        font_body = pygame.font.SysFont("Arial", max(10, _h * 24 // 1080))
+        _title_y = max(10, _h * 30 // 1080)
+        _lines_start = max(50, _h * 110 // 1080)
+        _line_gap = max(16, _h * 38 // 1080)
         clock = pygame.time.Clock()
         # Each entry: (text, colour)
         lines: List[Tuple[str, Tuple[int, int, int]]] = [
@@ -149,19 +166,24 @@ class ScreensMixin:
 
             self.screen.fill((0, 0, 0))
             self._draw_centered(
-                "INSTRUCTIONS", font_title, (255, 255, 0), 30
+                "INSTRUCTIONS", font_title, (255, 255, 0), _title_y
             )
             for i, (text, color) in enumerate(lines):
-                self._draw_centered(text, font_body, color, 110 + i * 38)
+                self._draw_centered(
+                    text, font_body, color,
+                    _lines_start + i * _line_gap)
             pygame.display.flip()
             clock.tick(30)
 
     def _run_end_screen(self, result: str, final_score: int) -> None:
         """Game-over or victory: show score, ask name, save it."""
-        font_title = pygame.font.SysFont("Arial", 52, bold=True)
-        font_score = pygame.font.SysFont("Arial", 32)
-        font_label = pygame.font.SysFont("Arial", 26)
-        font_input = pygame.font.SysFont("Courier New", 38, bold=True)
+        _w, _h = self.screen.get_size()
+        font_title = pygame.font.SysFont(
+            "Arial", max(16, _h * 52 // 1080), bold=True)
+        font_score = pygame.font.SysFont("Arial", max(12, _h * 32 // 1080))
+        font_label = pygame.font.SysFont("Arial", max(10, _h * 26 // 1080))
+        font_input = pygame.font.SysFont(
+            "Courier New", max(14, _h * 38 // 1080), bold=True)
         clock = pygame.time.Clock()
 
         title = "YOU WIN!" if result == "win" else "GAME OVER"
@@ -199,23 +221,29 @@ class ScreensMixin:
                 font_score, (255, 255, 255), h // 3,
             )
             self._draw_centered(
-                "Enter your name:", font_label, (180, 180, 180), h // 2 - 30,
+                "Enter your name:", font_label,
+                (180, 180, 180), h // 2 - max(10, h * 30 // 1080),
             )
             self._draw_centered(
-                name + "_", font_input, (255, 255, 0), h // 2 + 20,
+                name + "_", font_input,
+                (255, 255, 0), h // 2 + max(8, h * 20 // 1080),
             )
             self._draw_centered(
                 "ENTER to save  |  ESC to skip",
-                font_label, (100, 100, 100), h - 60,
+                font_label, (100, 100, 100), h - max(24, h * 60 // 1080),
             )
             pygame.display.flip()
             clock.tick(30)
 
     def _run_pause_menu(self) -> str:
         """Overlay pause menu. Returns 'resume' or 'quit'."""
-        font_title = pygame.font.SysFont("Courier New", 46, bold=True)
-        font_item = pygame.font.SysFont("Courier New", 28, bold=True)
-        font_hint = pygame.font.SysFont("Courier New", 16)
+        _w, _h = self.screen.get_size()
+        font_title = pygame.font.SysFont(
+            "Courier New", max(14, _h * 46 // 1080), bold=True)
+        font_item = pygame.font.SysFont(
+            "Courier New", max(10, _h * 28 // 1080), bold=True)
+        font_hint = pygame.font.SysFont("Courier New", max(8, _h * 16 // 1080))
+        _item_gap = max(20, _h * 44 // 1080)
         items = ["RESUME", "EXIT TO MAIN MENU"]
         actions = ["resume", "quit"]
         selected = 0
@@ -253,14 +281,16 @@ class ScreensMixin:
 
             # Title
             self._draw_centered(
-                "- PAUSED -", font_title, (255, 255, 0), cy - 80
+                "- PAUSED -", font_title,
+                (255, 255, 0), cy - max(30, _h * 80 // 1080)
             )
 
             # Blue separator (matches maze wall colour)
             sep_x1, sep_x2 = w // 4, 3 * w // 4
+            _sep_off = max(12, _h * 32 // 1080)
             pygame.draw.line(
                 self.screen, (33, 33, 255),
-                (sep_x1, cy - 32), (sep_x2, cy - 32), 2,
+                (sep_x1, cy - _sep_off), (sep_x2, cy - _sep_off), 2,
             )
 
             # Menu items
@@ -274,22 +304,26 @@ class ScreensMixin:
                     color = (200, 200, 200)
                 self._draw_centered(
                     f"{prefix}{label}", font_item, color,
-                    cy - 16 + i * 44,
+                    cy - max(8, _h * 16 // 1080) + i * _item_gap,
                 )
 
             # Hint
             self._draw_centered(
                 "ESC / P  -  RESUME",
-                font_hint, (100, 100, 100), h - 36,
+                font_hint, (100, 100, 100), h - max(14, _h * 36 // 1080),
             )
 
             pygame.display.flip()
             clock.tick(30)
 
     def _run_cheat_menu(self) -> str:
-        font_title = pygame.font.SysFont("Courier New", 46, bold=True)
-        font_item = pygame.font.SysFont("Courier New", 26, bold=True)
-        font_hint = pygame.font.SysFont("Courier New", 16)
+        _w, _h = self.screen.get_size()
+        font_title = pygame.font.SysFont(
+            "Courier New", max(14, _h * 46 // 1080), bold=True)
+        font_item = pygame.font.SysFont(
+            "Courier New", max(10, _h * 26 // 1080), bold=True)
+        font_hint = pygame.font.SysFont("Courier New", max(8, _h * 16 // 1080))
+        _item_gap = max(18, _h * 40 // 1080)
         selected = 0
         clock = pygame.time.Clock()
         blink_timer = 0
@@ -344,14 +378,16 @@ class ScreensMixin:
 
             # Title
             self._draw_centered(
-                "- CHEATS -", font_title, (255, 255, 0), cy - 100
+                "- CHEATS -", font_title,
+                (255, 255, 0), cy - max(36, _h * 100 // 1080)
             )
 
             # Blue separator
             sep_x1, sep_x2 = w // 4, 3 * w // 4
+            _sep_off2 = max(20, _h * 52 // 1080)
             pygame.draw.line(
                 self.screen, (33, 33, 255),
-                (sep_x1, cy - 52), (sep_x2, cy - 52), 2,
+                (sep_x1, cy - _sep_off2), (sep_x2, cy - _sep_off2), 2,
             )
 
             # Menu items
@@ -365,13 +401,13 @@ class ScreensMixin:
                     item_color = (200, 200, 200)
                 self._draw_centered(
                     f"{prefix}{label}", font_item, item_color,
-                    cy - 36 + i * 40,
+                    cy - max(14, _h * 36 // 1080) + i * _item_gap,
                 )
 
             # Hint
             self._draw_centered(
                 "ESC  -  BACK",
-                font_hint, (100, 100, 100), h - 36,
+                font_hint, (100, 100, 100), h - max(14, _h * 36 // 1080),
             )
 
             pygame.display.flip()

@@ -32,7 +32,9 @@ class HudMixin:
         self, elapsed: int, fps: int, max_time: int, level: int = 1
     ) -> None:
         """Draw score, lives, level and remaining time at the top."""
-        font = pygame.font.SysFont("Arial", 20, bold=True)
+        _h = self.screen.get_height()
+        font = pygame.font.SysFont(
+            "Arial", max(10, _h * 20 // 1080), bold=True)
         player = self.monitor.player
         remaining = max(0, max_time - elapsed // fps)
         text = (
@@ -47,8 +49,8 @@ class HudMixin:
 
         cheat_enabled = self.config.get("cheat_mode", False)
         if cheat_enabled:
-            hud_font = pygame.font.SysFont("Arial", 16)
-            bottom_y = self.screen.get_height() - 25
+            hud_font = pygame.font.SysFont("Arial", max(8, _h * 16 // 1080))
+            bottom_y = self.screen.get_height() - max(12, _h * 25 // 1080)
 
             if self.monitor.player.god_mode:
                 god_status = "ON"

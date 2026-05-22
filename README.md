@@ -128,6 +128,8 @@ Timeline :
 	mlorenzo:
 		- Edited the windows to be full screen at all time
 		- Did the config.py wich will contain the edit of the config throughout the computer of the Hub of the game
+		- Edits to pass through flake8 and mypy without any issues
+		- Added dynamiic size to text, so that it fill the screen entirely and not only the base text
 
 # Edits since last commit:
 

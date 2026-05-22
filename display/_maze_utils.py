@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(_ROOT, "mazegenerator-00001-py3-none-any"))
 from mazegenerator.mazegenerator import MazeGenerator  # noqa: E402
 
 
-class _FastMazeGenerator(MazeGenerator):  # type: ignore[misc]
+class _FastMazeGenerator(MazeGenerator):
     """
     Subclass that skips the expensive iterative-deepening shortest-path
     search. The game never reads ``shortest_path``, so skipping it has no

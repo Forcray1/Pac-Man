@@ -18,14 +18,17 @@ class edited_config:
 
     def __init__(self, screen: pygame.Surface) -> None:
         self.screen = screen
+        _h = screen.get_height()
         self._font_title = pygame.font.SysFont(
-            "Courier New", 42, bold=True
+            "Courier New", max(14, _h * 42 // 1080), bold=True
         )
         self._font_label = pygame.font.SysFont(
-            "Courier New", 22, bold=True
+            "Courier New", max(10, _h * 22 // 1080), bold=True
         )
-        self._font_val = pygame.font.SysFont("Courier New", 22)
-        self._font_hint = pygame.font.SysFont("Courier New", 15)
+        self._font_val = pygame.font.SysFont(
+            "Courier New", max(10, _h * 22 // 1080))
+        self._font_hint = pygame.font.SysFont(
+            "Courier New", max(8, _h * 15 // 1080))
 
         # Pre-render a static scanline overlay used every frame
         w, h = screen.get_size()
@@ -68,6 +71,7 @@ class edited_config:
                         pygame.K_RETURN, pygame.K_SPACE
                     ):
                         key = keys[selected]
+                        new_val: int | str | None
                         if self._is_bool(config[key]):
                             new_val = self._run_bool_menu(
                                 key, config[key]
@@ -143,12 +147,12 @@ class edited_config:
         w, h = self.screen.get_size()
         clock = pygame.time.Clock()
         font_lbl = pygame.font.SysFont(
-            "Courier New", 24, bold=True
+            "Courier New", max(10, h * 24 // 1080), bold=True
         )
         font_opt = pygame.font.SysFont(
-            "Courier New", 36, bold=True
+            "Courier New", max(12, h * 36 // 1080), bold=True
         )
-        font_hnt = pygame.font.SysFont("Courier New", 14)
+        font_hnt = pygame.font.SysFont("Courier New", max(8, h * 14 // 1080))
 
         background = self.screen.copy()
         # Normalise current value to a bool
@@ -157,8 +161,8 @@ class edited_config:
         else:
             chosen = bool(current_value)
 
-        bw = min(w - 160, 480)
-        bh = 190
+        bw = min(w - 160, max(360, w * 480 // 1920))
+        bh = max(140, h * 190 // 1080)
         bx = w // 2 - bw // 2
         by = h // 2 - bh // 2
 
@@ -205,17 +209,17 @@ class edited_config:
             )
             self.screen.blit(
                 lbl,
-                (bx + bw // 2 - lbl.get_width() // 2, by + 18),
+                (bx + bw // 2 - lbl.get_width() // 2, by + bh * 18 // 190),
             )
 
             pygame.draw.line(
                 self.screen, _DIM,
-                (bx + 12, by + 55),
-                (bx + bw - 12, by + 55), 1,
+                (bx + 12, by + bh * 55 // 190),
+                (bx + bw - 12, by + bh * 55 // 190), 1,
             )
 
             # True / False options
-            opt_y = by + 80
+            opt_y = by + bh * 80 // 190
             for i, label in enumerate(("True", "False")):
                 is_active = (label == "True") == chosen
                 fg = _YELLOW if is_active else _DIM
@@ -241,7 +245,7 @@ class edited_config:
                 hnt,
                 (
                     bx + bw // 2 - hnt.get_width() // 2,
-                    by + bh - 28,
+                    by + bh - bh * 28 // 190,
                 ),
             )
 
@@ -267,18 +271,18 @@ class edited_config:
         w, h = self.screen.get_size()
         clock = pygame.time.Clock()
         font_lbl = pygame.font.SysFont(
-            "Courier New", 24, bold=True
+            "Courier New", max(10, h * 24 // 1080), bold=True
         )
         font_val = pygame.font.SysFont(
-            "Courier New", 48, bold=True
+            "Courier New", max(14, h * 48 // 1080), bold=True
         )
-        font_hnt = pygame.font.SysFont("Courier New", 14)
+        font_hnt = pygame.font.SysFont("Courier New", max(8, h * 14 // 1080))
 
         background = self.screen.copy()
         value = int(current_value)
 
-        bw = min(w - 160, 480)
-        bh = 220
+        bw = min(w - 160, max(360, w * 480 // 1920))
+        bh = max(160, h * 220 // 1080)
         bx = w // 2 - bw // 2
         by = h // 2 - bh // 2
 
@@ -361,13 +365,13 @@ class edited_config:
             self.screen.blit(
                 lbl,
                 (bx + bw // 2 - lbl.get_width() // 2,
-                 by + 18),
+                 by + bh * 18 // 220),
             )
 
             pygame.draw.line(
                 self.screen, _DIM,
-                (bx + 12, by + 55),
-                (bx + bw - 12, by + 55), 1,
+                (bx + 12, by + bh * 55 // 220),
+                (bx + bw - 12, by + bh * 55 // 220), 1,
             )
 
             # Up arrow indicator
@@ -375,7 +379,7 @@ class edited_config:
             self.screen.blit(
                 up,
                 (bx + bw // 2 - up.get_width() // 2,
-                 by + 62),
+                 by + bh * 62 // 220),
             )
 
             # Current value
@@ -385,7 +389,7 @@ class edited_config:
             self.screen.blit(
                 val_surf,
                 (bx + bw // 2 - val_surf.get_width() // 2,
-                 by + 90),
+                 by + bh * 90 // 220),
             )
 
             # Down arrow indicator
@@ -393,7 +397,7 @@ class edited_config:
             self.screen.blit(
                 dn,
                 (bx + bw // 2 - dn.get_width() // 2,
-                 by + 148),
+                 by + bh * 148 // 220),
             )
 
             # Cap label
@@ -408,7 +412,7 @@ class edited_config:
             self.screen.blit(
                 cap_surf,
                 (bx + bw - cap_surf.get_width() - 12,
-                 by + 58),
+                 by + bh * 58 // 220),
             )
 
             hnt = font_hnt.render(
@@ -420,7 +424,7 @@ class edited_config:
                 hnt,
                 (
                     bx + bw // 2 - hnt.get_width() // 2,
-                    by + bh - 28,
+                    by + bh - bh * 28 // 220,
                 ),
             )
 
@@ -437,19 +441,19 @@ class edited_config:
         w, h = self.screen.get_size()
         clock = pygame.time.Clock()
         font_lbl = pygame.font.SysFont(
-            "Courier New", 24, bold=True
+            "Courier New", max(10, h * 24 // 1080), bold=True
         )
         font_inp = pygame.font.SysFont(
-            "Courier New", 30, bold=True
+            "Courier New", max(12, h * 30 // 1080), bold=True
         )
-        font_hnt = pygame.font.SysFont("Courier New", 14)
+        font_hnt = pygame.font.SysFont("Courier New", max(8, h * 14 // 1080))
 
         background = self.screen.copy()
         text = str(current_value)
         blink = 0
 
-        bw = min(w - 160, 580)
-        bh = 190
+        bw = min(w - 160, max(400, w * 580 // 1920))
+        bh = max(140, h * 190 // 1080)
         bx = w // 2 - bw // 2
         by = h // 2 - bh // 2
 
@@ -497,12 +501,12 @@ class edited_config:
                 f">> EDIT: {key.upper()}", True, _AMBER
             )
             lbl_x = bx + bw // 2 - lbl.get_width() // 2
-            self.screen.blit(lbl, (lbl_x, by + 18))
+            self.screen.blit(lbl, (lbl_x, by + bh * 18 // 190))
 
             pygame.draw.line(
                 self.screen, _DIM,
-                (bx + 12, by + 55),
-                (bx + bw - 12, by + 55),
+                (bx + 12, by + bh * 55 // 190),
+                (bx + bw - 12, by + bh * 55 // 190),
                 1,
             )
 
@@ -511,7 +515,7 @@ class edited_config:
                 text + cursor, True, _GREEN
             )
             inp_x = bx + bw // 2 - inp.get_width() // 2
-            self.screen.blit(inp, (inp_x, by + 75))
+            self.screen.blit(inp, (inp_x, by + bh * 75 // 190))
 
             hnt = font_hnt.render(
                 "[ ENTER ] confirm      [ ESC ] cancel",
@@ -519,7 +523,7 @@ class edited_config:
                 _DIM,
             )
             hnt_x = bx + bw // 2 - hnt.get_width() // 2
-            self.screen.blit(hnt, (hnt_x, by + bh - 28))
+            self.screen.blit(hnt, (hnt_x, by + bh - bh * 28 // 190))
 
             pygame.display.flip()
             clock.tick(30)
@@ -537,7 +541,7 @@ class edited_config:
         w, h = self.screen.get_size()
         self.screen.fill(_BG)
 
-        margin = 44
+        margin = max(20, w * 44 // 1920)
 
         border_rect = pygame.Rect(
             margin, margin,
@@ -571,9 +575,9 @@ class edited_config:
             1,
         )
 
-        col_key_x = margin + 50
-        col_val_x = w // 2 + 50
-        header_y = sep_y + 10
+        col_key_x = margin + max(20, w * 50 // 1920)
+        col_val_x = w // 2 + max(20, w * 50 // 1920)
+        header_y = sep_y + max(6, h * 10 // 1080)
 
         hdr_k = self._font_hint.render(
             "PARAMETER", True, _DIM
@@ -583,7 +587,11 @@ class edited_config:
         self.screen.blit(hdr_v, (col_val_x, header_y))
 
         row_start = header_y + hdr_k.get_height() + 4
-        row_h = 30
+        _hint_h = self._font_hint.get_height() + 10
+        _available = h - margin - _hint_h - row_start
+        row_h = max(
+            self._font_label.get_height() + 2,
+            _available // max(1, len(keys)))
 
         for i, key in enumerate(keys):
             ry = row_start + i * row_h
