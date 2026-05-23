@@ -24,12 +24,15 @@ class RendererMixin:
 
     def get_wall_mask(self, grid: list[list[int]], x: int, y: int) -> int:
         mask = 0
-        if y > 0 and grid[y - 1][x] == WALL:
+        row_count = len(grid)
+        if y > 0 and x < len(grid[y - 1]) and grid[y - 1][x] == WALL:
             mask += 1  # Top = 1
-        if x < self.cols - 1 and grid[y][x + 1] == WALL:
+        if x < len(grid[y]) - 1 and grid[y][x + 1] == WALL:
             mask += 2  # Right = 2
-        if y < self.rows - 1 and grid[y + 1][x] == WALL:
-            mask += 4  # Bottom = 4
+        if y < row_count - 1:
+            next_row = grid[y + 1]
+            if x < len(next_row) and next_row[x] == WALL:
+                mask += 4  # Bottom = 4
         if x > 0 and grid[y][x - 1] == WALL:
             mask += 8  # Left = 8
         return mask
@@ -162,7 +165,7 @@ class RendererMixin:
         self.offset_y = (actual_h - (self.rows * self.TILE_SIZE)) // 2
         grid = self.monitor.grid
         for y in range(self.rows):
-            for x in range(self.cols):
+            for x in range(len(grid[y])):
                 rect = pygame.Rect(
                     self.offset_x + x * self.TILE_SIZE,
                     self.offset_y + y * self.TILE_SIZE,

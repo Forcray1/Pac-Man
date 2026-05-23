@@ -364,6 +364,9 @@ Timeline :
 23/05/2026:
 	mlorenzo:
 		- Design improvments
+		- Added the READY at the start of levels/Reset
+		- Added the typos for each caracters needed
+		- Didn't find any bugs yet
 ```
 
 # Edits since last commit:
@@ -378,3 +381,5 @@ debugg
 Ajouter date de fin de projet dans le README, a la place du '[final date]'
 
 j'ai trouver un bug que j'arrive pas a corriger, si tu spam 'c' quand tu respawn ca bug, mais si tu coupe et clear pas les instructions, elles se stacks les une sur les autres, si tu trovue comment le corriger ca m'arrange sinon nsm
+
+Si tu met un nom manuellement dans le dossier des scores avec u @ ou un non alpha numérique, il le lit quand meme et le skip pas comme si tu brutforce un score negatif

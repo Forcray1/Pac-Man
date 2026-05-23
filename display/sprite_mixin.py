@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from typing import TYPE_CHECKING
+import sys
 
 import pygame
 
@@ -121,11 +122,51 @@ class SpritesMixin:
             for i in range(13)
         ]
 
+        # texts.png — not normalized to keep raw cords
+        _texts_path = os.path.join(_ROOT, "assets", "Typo", "texts.png")
+        if not os.path.exists(_texts_path):
+            print(
+                f"[WARNING] texts.png not found : {_texts_path}\n"
+                "  -> fallback (ByteBounce) will be used for READY!",
+                file=sys.stderr
+            )
+            self.raw_images["texts"] = None
+        else:
+            try:
+                _surf = pygame.image.load(_texts_path).convert_alpha()
+                _w, _h = _surf.get_size()
+                _expected_w, _expected_h = 128, 224
+                if _w != _expected_w or _h != _expected_h:
+                    print(
+                        f"[WARNING] texts.png loaded but unexpected "
+                        f"dimensions : {_w}×{_h} "
+                        f"(instead of {_expected_w}×{_expected_h})\n"
+                        "  → Tile grid might be off.",
+                        file=sys.stderr
+                    )
+                else:
+                    print(
+                        f"[SpriteMixin] texts.png ready ({_w}×{_h} px, "
+                    )
+                self.raw_images["texts"] = _surf
+            except Exception as exc:
+                print(
+                    f"[WARNING] Error while loading texts.png : "
+                    f"{exc}\n"
+                    " -> fallback (ByteBounce) will be used for READY!"
+                )
+                self.raw_images["texts"] = None
+
     def scale_sprites(self) -> None:
         self.sprites: dict[
             str, pygame.Surface | list[pygame.Surface | None] | None
         ] = {}
         for key, item in self.raw_images.items():
+            # texts.png must stay at its original resolution so subsurface
+            # extraction uses the correct pixel coordinates.
+            if key == "texts":
+                self.sprites[key] = item
+                continue
             if isinstance(item, list):
                 scaled_list: list[pygame.Surface | None] = []
                 for img in item:
