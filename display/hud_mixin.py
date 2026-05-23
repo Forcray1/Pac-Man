@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Any
 
 import pygame
+
+from display._maze_utils import _ROOT
+
+_TYPO_PATH = os.path.join(_ROOT, "assets", "Typo", "ByteBounce.ttf")
 
 if TYPE_CHECKING:
     from core.monitor import Monitor
@@ -33,8 +38,7 @@ class HudMixin:
     ) -> None:
         """Draw score, lives, level and remaining time at the top."""
         _h = self.screen.get_height()
-        font = pygame.font.SysFont(
-            "Arial", max(10, _h * 20 // 1080), bold=True)
+        font = pygame.font.Font(_TYPO_PATH, max(10, _h * 20 // 1080))
         player = self.monitor.player
         remaining = max(0, max_time - elapsed // fps)
         text = (
@@ -49,7 +53,7 @@ class HudMixin:
 
         cheat_enabled = self.config.get("cheat_mode", False)
         if cheat_enabled:
-            hud_font = pygame.font.SysFont("Arial", max(8, _h * 16 // 1080))
+            hud_font = pygame.font.Font(_TYPO_PATH, max(8, _h * 16 // 1080))
             bottom_y = self.screen.get_height() - max(12, _h * 25 // 1080)
 
             if self.monitor.player.god_mode:

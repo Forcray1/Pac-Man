@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Callable, List, Tuple
 
 import pygame
+
+from display._maze_utils import _ROOT
+
+_TYPO_PATH = os.path.join(_ROOT, "assets", "Typo", "ByteBounce.ttf")
 
 if TYPE_CHECKING:
     from core.monitor import Monitor
@@ -10,7 +15,8 @@ if TYPE_CHECKING:
 
 
 class ScreensMixin:
-    """Handles all full-screen UI loops: menu, highscores, instructions, end.
+    """
+    Handles all full-screen UI loops: menu, highscores, instructions, end.
     """
 
     if TYPE_CHECKING:
@@ -21,12 +27,33 @@ class ScreensMixin:
         _draw_centered: Callable[..., None]
 
     def _run_menu(self) -> str:
-        """Main menu. Returns 'play', 'highscores', 'instructions', 'quit'."""
+        """
+        Main menu. Returns 'play', 'highscores', 'instructions', 'quit'.
+        """
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.SysFont(
-            "Arial", max(16, _h * 56 // 1080), bold=True)
-        font_item = pygame.font.SysFont("Arial", max(12, _h * 34 // 1080))
-        _item_gap = max(20, _h * 52 // 1080)
+        font_item = pygame.font.Font(_TYPO_PATH, max(40, _h * 72 // 1080))
+
+        LOGO_CENTER_X_RATIO = 0.527  # 0.0 = left edge, 1.0 = right edge
+        LOGO_CENTER_Y = 180  # pixels from the top of the screen
+        LOGO_WIDTH_RATIO = 0.35  # logo width as a fraction of screen width
+
+        _logo_path = os.path.join(_ROOT, "assets", "Utils", "Logo.png")
+        _logo_raw = (
+            pygame.image.load(_logo_path).convert_alpha()
+            if os.path.exists(_logo_path)
+            else None
+        )
+
+        _bg_path = os.path.join(_ROOT,
+                                "assets",
+                                "Utils",
+                                "background_main.jpg")
+        _bg_raw = (
+            pygame.image.load(_bg_path).convert()
+            if os.path.exists(_bg_path)
+            else None
+        )
+        _item_gap = max(60, _h * 96 // 1080)
         items = [
             "Start Game", "View Highscores",
             "Instructions", "Exit",
@@ -49,8 +76,12 @@ class ScreensMixin:
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                         return actions[selected]
 
-            self.screen.fill((0, 0, 0))
             w, h = self.screen.get_size()
+            if _bg_raw is not None:
+                _bg = pygame.transform.smoothscale(_bg_raw, (w, h))
+                self.screen.blit(_bg, (0, 0))
+            else:
+                self.screen.fill((0, 0, 0))
 
             # --- Animation at the bottom ---
             anim_x += 5
@@ -77,13 +108,23 @@ class ScreensMixin:
                         self.screen.blit(ghost_sprite, (ghost_x, anim_y))
             # -------------------------------
 
-            self._draw_centered("PAC-MAN", font_title, (255, 255, 0), h // 5)
+            # --- Logo ---
+            if _logo_raw is not None:
+                _lw = int(w * LOGO_WIDTH_RATIO)
+                _lh = int(_logo_raw.get_height() * _lw / _logo_raw.get_width())
+                _logo = pygame.transform.smoothscale(_logo_raw, (_lw, _lh))
+                self.screen.blit(_logo, (_logo.get_rect(
+                    centerx=int(w * LOGO_CENTER_X_RATIO),
+                    centery=LOGO_CENTER_Y,
+                )))
+            # ---------------
+
             for i, label in enumerate(items):
                 color = (255, 255, 0) if i == selected else (200, 200, 200)
                 prefix = "> " if i == selected else "  "
                 self._draw_centered(
                     f"{prefix}{label}", font_item, color,
-                    h // 2 + i * _item_gap,
+                    h // 2 - 80 + i * _item_gap,
                 )
             pygame.display.flip()
             clock.tick(30)
@@ -91,10 +132,9 @@ class ScreensMixin:
     def _run_highscores(self) -> None:
         """Show top-10 leaderboard. ENTER or ESC to go back."""
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.SysFont(
-            "Arial", max(14, _h * 44 // 1080), bold=True)
-        font_row = pygame.font.SysFont("Courier New", max(10, _h * 26 // 1080))
-        font_hint = pygame.font.SysFont("Arial", max(10, _h * 22 // 1080))
+        font_title = pygame.font.Font(_TYPO_PATH, max(14, _h * 44 // 1080))
+        font_row = pygame.font.Font(_TYPO_PATH, max(10, _h * 26 // 1080))
+        font_hint = pygame.font.Font(_TYPO_PATH, max(10, _h * 22 // 1080))
         _title_y = max(10, _h * 30 // 1080)
         _row_start = max(50, _h * 100 // 1080)
         _row_gap = max(14, _h * 36 // 1080)
@@ -134,9 +174,8 @@ class ScreensMixin:
     def _run_instructions(self) -> None:
         """Show controls and rules. ENTER or ESC to go back."""
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.SysFont(
-            "Arial", max(14, _h * 44 // 1080), bold=True)
-        font_body = pygame.font.SysFont("Arial", max(10, _h * 24 // 1080))
+        font_title = pygame.font.Font(_TYPO_PATH, max(14, _h * 44 // 1080))
+        font_body = pygame.font.Font(_TYPO_PATH, max(10, _h * 24 // 1080))
         _title_y = max(10, _h * 30 // 1080)
         _lines_start = max(50, _h * 110 // 1080)
         _line_gap = max(16, _h * 38 // 1080)
@@ -178,12 +217,10 @@ class ScreensMixin:
     def _run_end_screen(self, result: str, final_score: int) -> None:
         """Game-over or victory: show score, ask name, save it."""
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.SysFont(
-            "Arial", max(16, _h * 52 // 1080), bold=True)
-        font_score = pygame.font.SysFont("Arial", max(12, _h * 32 // 1080))
-        font_label = pygame.font.SysFont("Arial", max(10, _h * 26 // 1080))
-        font_input = pygame.font.SysFont(
-            "Courier New", max(14, _h * 38 // 1080), bold=True)
+        font_title = pygame.font.Font(_TYPO_PATH, max(16, _h * 52 // 1080))
+        font_score = pygame.font.Font(_TYPO_PATH, max(12, _h * 32 // 1080))
+        font_label = pygame.font.Font(_TYPO_PATH, max(10, _h * 26 // 1080))
+        font_input = pygame.font.Font(_TYPO_PATH, max(14, _h * 38 // 1080))
         clock = pygame.time.Clock()
 
         title = "YOU WIN!" if result == "win" else "GAME OVER"
@@ -238,11 +275,9 @@ class ScreensMixin:
     def _run_pause_menu(self) -> str:
         """Overlay pause menu. Returns 'resume' or 'quit'."""
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.SysFont(
-            "Courier New", max(14, _h * 46 // 1080), bold=True)
-        font_item = pygame.font.SysFont(
-            "Courier New", max(10, _h * 28 // 1080), bold=True)
-        font_hint = pygame.font.SysFont("Courier New", max(8, _h * 16 // 1080))
+        font_title = pygame.font.Font(_TYPO_PATH, max(14, _h * 46 // 1080))
+        font_item = pygame.font.Font(_TYPO_PATH, max(10, _h * 28 // 1080))
+        font_hint = pygame.font.Font(_TYPO_PATH, max(8, _h * 16 // 1080))
         _item_gap = max(20, _h * 44 // 1080)
         items = ["RESUME", "EXIT TO MAIN MENU"]
         actions = ["resume", "quit"]
@@ -318,11 +353,9 @@ class ScreensMixin:
 
     def _run_cheat_menu(self) -> str:
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.SysFont(
-            "Courier New", max(14, _h * 46 // 1080), bold=True)
-        font_item = pygame.font.SysFont(
-            "Courier New", max(10, _h * 26 // 1080), bold=True)
-        font_hint = pygame.font.SysFont("Courier New", max(8, _h * 16 // 1080))
+        font_title = pygame.font.Font(_TYPO_PATH, max(14, _h * 46 // 1080))
+        font_item = pygame.font.Font(_TYPO_PATH, max(10, _h * 26 // 1080))
+        font_hint = pygame.font.Font(_TYPO_PATH, max(8, _h * 16 // 1080))
         _item_gap = max(18, _h * 40 // 1080)
         selected = 0
         clock = pygame.time.Clock()

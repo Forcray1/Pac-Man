@@ -361,6 +361,9 @@ Timeline :
 		- Finished all the game, missing only the animations and the debugg, and some re-design
 		- Perfected parsing with files verifs, and warning for unknown key(s)
 		- Instructions were stackable during the freeze at the start of each level, corrected by clearing the events at the end of the time sleep in pygame_viewer.py
+23/05/2026:
+	mlorenzo:
+		- Design improvments
 ```
 
 # Edits since last commit:
@@ -368,10 +371,8 @@ Le jeu est finito
 
 # Edit a faire : 
 refaire le visuel des menus pause et cheat
-refaire le menu de start de pacman
 cacher les hitboxs
 rajouter toutes les animations
-faire README
 faire packages itch.io
 debugg
 Ajouter date de fin de projet dans le README, a la place du '[final date]'
