@@ -128,11 +128,11 @@ class Redirect:
 
         # Pre-load transition animations into cache
         _to_game_dir = os.path.join(
-            os.path.dirname(__file__), "..", "animation", "to_game"
+            os.path.dirname(__file__), "..", "animation", "TransitionToArcade"
         )
         self._preload_animation(screen, _to_game_dir)
         _to_computer_dir = os.path.join(
-            os.path.dirname(__file__), "..", "animation", "to_computer"
+            os.path.dirname(__file__), "..", "animation", "TransitionToDesktop"
         )
         self._preload_animation(screen, _to_computer_dir)
 
@@ -303,7 +303,7 @@ class Redirect:
 
     def to_game(self) -> None:
         anim_path = os.path.join(
-            os.path.dirname(__file__), "..", "animation", "to_game"
+            os.path.dirname(__file__), "..", "animation", "TransitionToArcade"
         )
         self.launch_animation(anim_path, 30)
         viewer = PygameViewer(self.config)
@@ -312,7 +312,7 @@ class Redirect:
 
     def to_computer(self) -> None:
         anim_path = os.path.join(
-            os.path.dirname(__file__), "..", "animation", "to_computer"
+            os.path.dirname(__file__), "..", "animation", "TransitionToDesktop"
         )
         self.launch_animation(anim_path, 30)
         with open(self.config_path, encoding="utf-8") as f:

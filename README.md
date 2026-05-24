@@ -367,6 +367,10 @@ Timeline :
 		- Added the READY at the start of levels/Reset
 		- Added the typos for each caracters needed
 		- Didn't find any bugs yet
+24/05/2026:
+	mlorenzo:
+		- Adapted the path for the animation to link up to all the files
+		- changed the config.py starting and closing animation to match the screen already on
 ```
 
 # Edits since last commit:

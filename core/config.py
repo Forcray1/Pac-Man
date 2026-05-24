@@ -54,13 +54,14 @@ class edited_config:
         blink = 0
         clock = pygame.time.Clock()
 
-        while True:
+        running = True
+        while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    return config
+                    running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        return config
+                        running = False
                     elif event.key == pygame.K_UP:
                         selected = (selected - 1) % len(keys)
                         blink = 0
@@ -89,9 +90,13 @@ class edited_config:
                                 config, key, new_val
                             )
 
-            blink += 1
-            self._render(config, keys, selected, blink)
-            clock.tick(30)
+            if running:
+                blink += 1
+                self._render(config, keys, selected, blink)
+                clock.tick(30)
+
+        self._crt_power_off()
+        return config
 
     def edit_config(
         self, config: dict[str, Any], key: str, value: Any
@@ -642,25 +647,22 @@ class edited_config:
 
     def _crt_power_on(self) -> None:
         """
-        CRT start-up animation:
-        1. A bright stripe expands from the screen centre (phosphor
-           warm-up).
-        2. The content fades in from black.
+        Opening animation: a black rectangle grows from screen centre
+        to full size on a white background, then config fades in.
         """
         w, h = self.screen.get_size()
         clock = pygame.time.Clock()
-        cy = h // 2
 
-        step = max(1, cy // 28)
-        for half in range(0, cy + 1, step):
-            self.screen.fill(_BG)
-            stripe = pygame.Rect(
-                0, cy - half, w, half * 2 or 2
-            )
-            pygame.draw.rect(self.screen, _DIM, stripe)
-            pygame.draw.line(
-                self.screen, _GREEN, (0, cy), (w, cy), 1
-            )
+        steps = 28
+        for i in range(1, steps + 1):
+            t = i / steps
+            ease = 1.0 - (1.0 - t) ** 2
+            rw = max(2, int(w * ease))
+            rh = max(2, int(h * ease))
+            rx = (w - rw) // 2
+            ry = (h - rh) // 2
+            self.screen.fill((255, 255, 255))
+            pygame.draw.rect(self.screen, _BG, pygame.Rect(rx, ry, rw, rh))
             self.screen.blit(self._scanlines, (0, 0))
             pygame.display.flip()
             clock.tick(60)
@@ -680,3 +682,34 @@ class edited_config:
             self.screen.blit(self._scanlines, (0, 0))
             pygame.display.flip()
             clock.tick(60)
+
+    def _crt_power_off(self) -> None:
+        """
+        Closing animation: config content shrinks into a rectangle
+        contracting to screen centre, then white.
+        """
+        w, h = self.screen.get_size()
+        clock = pygame.time.Clock()
+        snapshot = self.screen.copy()
+
+        steps = 28
+        for i in range(steps, -1, -1):
+            t = i / steps
+            ease = 1.0 - (1.0 - t) ** 2
+            rw = max(2, int(w * ease))
+            rh = max(2, int(h * ease))
+            rx = (w - rw) // 2
+            ry = (h - rh) // 2
+            self.screen.fill((255, 255, 255))
+            if rw > 2 and rh > 2:
+                self.screen.blit(
+                    pygame.transform.scale(snapshot, (rw, rh)),
+                    (rx, ry),
+                )
+            self.screen.blit(self._scanlines, (0, 0))
+            pygame.display.flip()
+            clock.tick(60)
+
+        self.screen.fill((255, 255, 255))
+        pygame.display.flip()
+        clock.tick(7)
