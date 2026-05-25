@@ -145,9 +145,7 @@ class SpritesMixin:
                         file=sys.stderr
                     )
                 else:
-                    print(
-                        f"[SpriteMixin] texts.png ready ({_w}×{_h} px, "
-                    )
+                    pass
                 self.raw_images["texts"] = _surf
             except Exception as exc:
                 print(

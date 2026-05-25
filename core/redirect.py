@@ -10,6 +10,7 @@ from display.pygame_viewer import PygameViewer
 
 
 _anim_cache: dict[tuple[str, int, int], list[pygame.Surface]] = {}
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class Redirect:
@@ -94,8 +95,7 @@ class Redirect:
 
         # Animation frames
         _anim_dir = os.path.join(
-            os.path.dirname(__file__),
-            "..", "animation", "BaseAnimation",
+            _ROOT, "animation", "BaseAnimation",
         )
         if not os.path.isdir(_anim_dir):
             print(
@@ -128,11 +128,11 @@ class Redirect:
 
         # Pre-load transition animations into cache
         _to_game_dir = os.path.join(
-            os.path.dirname(__file__), "..", "animation", "TransitionToArcade"
+            _ROOT, "animation", "TransitionToArcade"
         )
         self._preload_animation(screen, _to_game_dir)
         _to_computer_dir = os.path.join(
-            os.path.dirname(__file__), "..", "animation", "TransitionToDesktop"
+            _ROOT, "animation", "TransitionToDesktop"
         )
         self._preload_animation(screen, _to_computer_dir)
 
@@ -156,10 +156,9 @@ class Redirect:
                         if _in_poly(mouse, poly):
                             self.launch_animation(launch_anim)
                             action()
-                            # Restore the main menu display after returning
-                            screen = pygame.display.set_mode(
-                                (sw, sh), pygame.FULLSCREEN
-                            )
+                            # Restore caption; reuse existing surface to
+                            # avoid window flicker on return.
+                            screen = pygame.display.get_surface() or screen
                             pygame.display.set_caption("Pac-Man")
                             pygame.event.clear()
 
@@ -188,11 +187,11 @@ class Redirect:
                         )
                 screen.blit(anim_frames[anim_frame_idx], (0, 0))
 
-            # Mouse position debug (top-right)
-            pos_surf = font_hint.render(
-                f"{mouse[0]}, {mouse[1]}", True, (255, 255, 255)
-            )
-            screen.blit(pos_surf, (sw - pos_surf.get_width() - 8, 8))
+            # # Mouse position debug (top-right)
+            # pos_surf = font_hint.render(
+            #     f"{mouse[0]}, {mouse[1]}", True, (255, 255, 255)
+            # )
+            # screen.blit(pos_surf, (sw - pos_surf.get_width() - 8, 8))
 
             # Draw quit button (translucent grey circle, top-left)
             quit_surf = pygame.Surface(
@@ -212,16 +211,6 @@ class Redirect:
                  quit_r - x_lbl.get_height() // 2),
             )
             screen.blit(quit_surf, btn_quit.topleft)
-
-            # Draw buttons
-            for poly, label, _, __ in buttons:
-                hovered = _in_poly(mouse, poly)
-                pygame.draw.polygon(
-                    screen,
-                    (255, 255, 255) if hovered else (180, 180, 180),
-                    poly,
-                    2,
-                )
 
             pygame.display.flip()
             tick += 1
@@ -303,7 +292,7 @@ class Redirect:
 
     def to_game(self) -> None:
         anim_path = os.path.join(
-            os.path.dirname(__file__), "..", "animation", "TransitionToArcade"
+            _ROOT, "animation", "TransitionToArcade"
         )
         self.launch_animation(anim_path, 30)
         viewer = PygameViewer(self.config)
@@ -312,7 +301,7 @@ class Redirect:
 
     def to_computer(self) -> None:
         anim_path = os.path.join(
-            os.path.dirname(__file__), "..", "animation", "TransitionToDesktop"
+            _ROOT, "animation", "TransitionToDesktop"
         )
         self.launch_animation(anim_path, 30)
         with open(self.config_path, encoding="utf-8") as f:

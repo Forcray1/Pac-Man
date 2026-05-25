@@ -371,6 +371,11 @@ Timeline :
 	mlorenzo:
 		- Adapted the path for the animation to link up to all the files
 		- changed the config.py starting and closing animation to match the screen already on
+25/05/2026:
+	mlorenzo:
+		- Created the rule for the binary package requiered
+		- Cleaned the visuals
+		- Changed the creation of a new window for each transition to a reuse of the original one
 ```
 
 # Edits since last commit:
@@ -378,9 +383,6 @@ Le jeu est finito
 
 # Edit a faire : 
 refaire le visuel des menus pause et cheat
-cacher les hitboxs
-rajouter toutes les animations
-faire packages itch.io
 debugg
 Ajouter date de fin de projet dans le README, a la place du '[final date]'
 

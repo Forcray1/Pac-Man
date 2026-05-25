@@ -27,6 +27,7 @@ packages = ["core", "display", "entities"]
 dev = [
     "flake8",
     "mypy",
+    "pyinstaller",
 ]
 
 [tool.mypy]

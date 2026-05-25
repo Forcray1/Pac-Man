@@ -669,14 +669,14 @@ class edited_config:
 
         fade = pygame.Surface((w, h))
         fade.fill(_BG)
-        t = self._font_title.render(
+        title_surf = self._font_title.render(
             "CONFIG EDITOR", True, _YELLOW
         )
-        tx = w // 2 - t.get_width() // 2
-        ty = h // 2 - t.get_height() // 2
+        tx = w // 2 - title_surf.get_width() // 2
+        ty = h // 2 - title_surf.get_height() // 2
         for alpha in range(255, -1, -12):
             self.screen.fill(_BG)
-            self.screen.blit(t, (tx, ty))
+            self.screen.blit(title_surf, (tx, ty))
             fade.set_alpha(alpha)
             self.screen.blit(fade, (0, 0))
             self.screen.blit(self._scanlines, (0, 0))

@@ -97,8 +97,13 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         self.TILE_SIZE = max(12, min(tile_h, tile_w, 48))
 
         # --- 3. FULLSCREEN WINDOW ---
-        # Pass (0, 0) so pygame uses the current desktop resolution.
-        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        # Reuse an existing surface to avoid the window flickering when
+        # transitioning from the main menu.
+        _existing = pygame.display.get_surface()
+        if _existing is not None:
+            self.screen = _existing
+        else:
+            self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         pygame.display.set_caption("Pac-Man - Pygame Viewer")
 
         # Store the actual fullscreen dimensions for later reuse.

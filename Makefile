@@ -10,7 +10,7 @@ debug:
 	uv run python -m pdb pac-man.py config.json
 
 clean:
-	rm -rf .venv
+	rm -rf .venv build dist
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
@@ -23,7 +23,21 @@ lint-strict:
 	uv run flake8 $(CODE) pac-man.py
 	uv run mypy $(CODE) pac-man.py --strict --explicit-package-bases
 
+package:
+	uv run pyinstaller \
+		--name pac-man \
+		--onedir \
+		--windowed \
+		--clean \
+		--noconfirm \
+		--paths mazegenerator-00001-py3-none-any \
+		--add-data "assets:assets" \
+		--add-data "animation:animation" \
+		--add-data "config:config" \
+		--add-data "scores:scores" \
+		pac-man.py
+
 %:
 	@:
 
-.PHONY: install run debug clean lint lint-strict
+.PHONY: install run debug clean lint lint-strict package
