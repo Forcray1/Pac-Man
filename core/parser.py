@@ -45,31 +45,31 @@ def parser(file: str) -> dict[str, Any]:
     levels = config["level"]
     try:
         n = int(levels)
-        if n < 1:
+        if n < 1 or n > 999:
             raise ValueError
     except Exception:
         print(f"ERROR: The level amount has to be a positive"
-              f" integer ({levels})\n",
+              f" integer lower than 1000 ({levels})\n",
               file=sys.stderr)
         return {}
     # Check value of width
     try:
         width = int(config["width"])
-        if width < 3:
+        if width < 3 or width > 50:
             raise ValueError
     except Exception:
         print(f"ERROR: The width has to be a positive integer greater"
-              f" than 3 ({config['width']})\n",
+              f" than 3 and lower than 50 ({config['width']})\n",
               file=sys.stderr)
         return {}
     # Check value of height
     try:
         height = int(config["height"])
-        if height < 3:
+        if height < 3 or height > 50:
             raise ValueError
     except Exception:
         print(f"ERROR: The height has to be a positive integer greater"
-              f" than 3 ({config['height']})\n",
+              f" than 3 and lower than 50 ({config['height']})\n",
               file=sys.stderr)
         return {}
     # Check value of difficulty
@@ -85,31 +85,33 @@ def parser(file: str) -> dict[str, Any]:
     # Check value of points_per_pacgum
     try:
         points_per_pacgums = int(config["points_per_pacgum"])
-        if points_per_pacgums < 0:
+        if points_per_pacgums < 0 or points_per_pacgums > 999:
             raise ValueError
     except Exception:
         print("ERROR: The points_per_pacgum has to be a positive integer"
-              " or zero\n",
+              " lower than 1000 or zero\n",
               file=sys.stderr)
         return {}
     # Check value of points_per_super_pacgum
     try:
         points_per_super_pacgum = int(config["points_per_super_pacgum"])
-        if points_per_super_pacgum < 0:
+        if points_per_super_pacgum < 0 or points_per_super_pacgum > 999:
             raise ValueError
     except Exception:
         print(f"ERROR: The points per super pacgum has to be a positive "
-              f"integer or zero ({config['points_per_super_pacgum']})\n",
+              f"integer lower than 1000 or zero "
+              f"({config['points_per_super_pacgum']})\n",
               file=sys.stderr)
         return {}
     # Check value of points_per_ghost
     try:
         points_per_ghost = int(config["points_per_ghost"])
-        if points_per_ghost < 0:
+        if points_per_ghost < 0 or points_per_ghost > 999:
             raise ValueError
     except Exception:
         print(f"ERROR: The points per ghost has to be a positive"
-              f" integer or zero ({config['points_per_ghost']})\n",
+              f" integer lower than 1000 or zero "
+              f"({config['points_per_ghost']})\n",
               file=sys.stderr)
         return {}
     # Check value of seed
@@ -122,11 +124,11 @@ def parser(file: str) -> dict[str, Any]:
     # Check value of time
     try:
         time = int(config["level_max_time"])
-        if time <= 0:
+        if time <= 0 or time > 999:
             raise ValueError
     except Exception:
         print(f"ERROR: The time per level must be a positive integer "
-              f"({config['level_max_time']})\n",
+              f"lower than 1000 ({config['level_max_time']})\n",
               file=sys.stderr)
         return {}
     # Check value of cheat mode
@@ -149,15 +151,31 @@ def parser(file: str) -> dict[str, Any]:
     # Check value of super time
     try:
         super_time = int(config["super_time"])
-        if super_time < 0:
+        if super_time < 0 or super_time > 999:
             raise ValueError
     except Exception:
-        print(f"ERROR: The time for super mode has to be a positive integer or"
+        print(f"ERROR: The time for super mode has to be a positive integer "
+              f"lower than 1000 or"
               f" zero ({config['super_time']})\n", file=sys.stderr)
         return {}
 
     # Check value of practice
-    practice = config.get("practice", "False")
+    practice = config["practice"]
+    if isinstance(practice, str):
+        if practice.lower() == "true":
+            practice = True
+        elif practice.lower() == "false":
+            practice = False
+        else:
+            print(f"ERROR: The practice mode have to be either "
+                  f"'True' or 'False' ({practice})\n",
+                  file=sys.stderr)
+            return {}
+    elif not isinstance(practice, bool):
+        print(f"ERROR: The practice mode have to be either "
+              f"'True' or 'False' ({practice})\n",
+              file=sys.stderr)
+        return {}
     files: dict[int, str] = {
         1: "scores/1/highscores.json",
         2: "scores/2/highscores.json",

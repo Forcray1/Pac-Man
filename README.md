@@ -376,6 +376,7 @@ Timeline :
 		- Created the rule for the binary package requiered
 		- Cleaned the visuals
 		- Changed the creation of a new window for each transition to a reuse of the original one
+		- Changed the max/min values for config, and maze size because of the performances.
 ```
 
 # Edits since last commit:

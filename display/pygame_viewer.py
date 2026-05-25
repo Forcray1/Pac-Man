@@ -66,6 +66,8 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         else:
             self.maze_width = 15
             self.maze_height = 15
+            self._base_maze_width = self.maze_width
+            self._base_maze_height = self.maze_height
             self._seed = 0
             self.config = {
                 "super_pacgums": 4,
@@ -165,6 +167,8 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                 self.maze_width = self._base_maze_width
                 self.maze_height = self._base_maze_height
                 self.monitor = self._build_monitor()
+                self.rows = len(self.monitor.grid)
+                self.cols = len(self.monitor.grid[0])
                 current_level = 1
 
                 while True:

@@ -270,12 +270,15 @@ class edited_config:
         import sys as _sys
 
         # Per-key maximum / minimum
-        _CAPS: dict[str, int] = {"difficulty": 5}
+        _CAPS: dict[str, int] = {"difficulty": 5,
+                                 "width": 50,
+                                 "height": 50}
         _MINS: dict[str, int] = {"width": 3,
                                  "height": 3,
                                  "difficulty": 1,
-                                 "level": 1}
-        INT_MAX = _CAPS.get(key, _sys.maxsize)
+                                 "level": 1,
+                                 "level_max_time": 1}
+        INT_MAX = _CAPS.get(key, 999)
         INT_MIN = _MINS.get(key, 0)
 
         w, h = self.screen.get_size()
