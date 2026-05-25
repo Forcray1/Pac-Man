@@ -386,6 +386,7 @@ Le jeu est finito
 refaire le visuel des menus pause et cheat
 debugg
 Ajouter date de fin de projet dans le README, a la place du '[final date]'
+mettre le package sur itch
 
 j'ai trouver un bug que j'arrive pas a corriger, si tu spam 'c' quand tu respawn ca bug, mais si tu coupe et clear pas les instructions, elles se stacks les une sur les autres, si tu trovue comment le corriger ca m'arrange sinon nsm
 
