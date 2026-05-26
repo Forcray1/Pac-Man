@@ -22,13 +22,19 @@ class Game:
         viewer: PygameViewer,
         level: int = 1,
     ) -> None:
+        """
+        Initialize the game loop for a single *level* using the shared
+        *monitor*, *config* and *viewer*.
+        """
         self.monitor = monitor
         self.config = config
         self.viewer = viewer
         self.level = level
 
     def run(self) -> str:
-        """Run one level. Returns 'win', 'lose', or 'quit'."""
+        """
+        Run one level. Returns 'win', 'lose', or 'quit'.
+        """
         clock = pygame.time.Clock()
         fps = 30
         max_time: int = int(self.config.get("level_max_time", 90))
@@ -46,10 +52,6 @@ class Game:
                         if self.viewer._run_pause_menu() == "quit":
                             return "quit"
                     cheat_enabled = self.config.get("cheat_mode", False)
-                    if cheat_enabled and event.key == pygame.K_g:
-                        self.monitor.player.god_mode = (
-                            not self.monitor.player.god_mode
-                        )
                     if cheat_enabled and event.key == pygame.K_c:
                         if self.viewer._run_cheat_menu() == "next_level":
                             return "win"
@@ -89,7 +91,9 @@ class Game:
             clock.tick(fps)
 
     def _reset_level(self, spawn_x: int, spawn_y: int) -> None:
-        """Reset state after losing a life."""
+        """
+        Reset state after losing a life.
+        """
         self.viewer.reset = True
         p = self.monitor.player
         p.is_dying = False

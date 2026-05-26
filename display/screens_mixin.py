@@ -371,10 +371,10 @@ class ScreensMixin:
                     if event.key == pygame.K_ESCAPE:
                         return "resume"
                     if event.key == pygame.K_UP:
-                        selected = (selected - 1) % 4
+                        selected = (selected - 1) % 5
                         blink_timer = 0
                     elif event.key == pygame.K_DOWN:
-                        selected = (selected + 1) % 4
+                        selected = (selected + 1) % 5
                         blink_timer = 0
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                         if selected == 0:
@@ -386,8 +386,10 @@ class ScreensMixin:
                                 not self.monitor.ghosts_frozen
                             )
                         elif selected == 2:
-                            return "next_level"
+                            self.monitor.player.lives += 1
                         elif selected == 3:
+                            return "next_level"
+                        elif selected == 4:
                             return "resume"
 
             blink_timer += 1
@@ -396,6 +398,7 @@ class ScreensMixin:
             display_items = [
                 f"NO COLLISION  {collision_tag}",
                 f"PAUSE GHOSTS  {ghosts_tag}",
+                f"ADD LIFE      ({self.monitor.player.lives})",
                 "NEXT LEVEL",
                 "RESUME",
             ]

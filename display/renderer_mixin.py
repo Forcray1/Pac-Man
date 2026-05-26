@@ -10,7 +10,9 @@ from entities.items import SuperPacgum
 
 
 class RendererMixin:
-    """Handles all drawing and window-resize logic."""
+    """
+    Handles all drawing and window-resize logic.
+    """
 
     if TYPE_CHECKING:
         cols: int
@@ -23,6 +25,10 @@ class RendererMixin:
         scale_sprites: Callable[[], None]
 
     def get_wall_mask(self, grid: list[list[int]], x: int, y: int) -> int:
+        """
+        Return a 4-bit mask describing which of the top/right/bottom/left
+        neighbours of *(x, y)* are walls.
+        """
         mask = 0
         row_count = len(grid)
         if y > 0 and x < len(grid[y - 1]) and grid[y - 1][x] == WALL:
@@ -40,6 +46,10 @@ class RendererMixin:
     def get_sprites_for_wall(
         self, mask: int, x: int, y: int
     ) -> list[pygame.Surface]:
+        """
+        Pick the sprite stack (border + inside wall) to draw for the wall
+        cell *(x, y)* given its neighbour *mask*.
+        """
         sprites_to_draw: list[pygame.Surface] = []
         is_border = False
         is_corner = False
@@ -160,6 +170,9 @@ class RendererMixin:
         return sprites_to_draw
 
     def draw_maze(self) -> None:
+        """
+        Render the maze, entities and pac-gums for the current frame.
+        """
         actual_w, actual_h = self.screen.get_size()
         self.offset_x = (actual_w - (self.cols * self.TILE_SIZE)) // 2
         self.offset_y = (actual_h - (self.rows * self.TILE_SIZE)) // 2
@@ -240,7 +253,9 @@ class RendererMixin:
                     self.screen.blit(sprite, (pos_x, pos_y))
 
     def draw_player(self) -> None:
-        """Draw Pac-Man with interpolation for smooth movement."""
+        """
+        Draw Pac-Man with interpolation for smooth movement.
+        """
         player = self.monitor.player
         if not player.active:
             return
@@ -298,7 +313,9 @@ class RendererMixin:
             self.screen.blit(base_sprite, rect.topleft)
 
     def draw_ghost_paths(self) -> None:
-        """Draw each ghost's current path (practice mode only)."""
+        """
+        Draw each ghost's current path (practice mode only).
+        """
         if not self.practice:
             return
 
@@ -355,7 +372,9 @@ class RendererMixin:
                 pygame.draw.circle(self.screen, color, (end_x, end_y), 6)
 
     def draw_ghosts(self) -> None:
-        """Draw all ghosts with smooth interpolation and blink effect."""
+        """
+        Draw all ghosts with smooth interpolation and blink effect.
+        """
         dir_map_vectors = {
             "N": (0, -1),
             "S": (0, 1),

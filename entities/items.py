@@ -7,6 +7,9 @@ class Pacgum(Entity):
     Awards points when eaten by Pac-Man.
     """
     def __init__(self, x: int, y: int) -> None:
+        """
+        Initialize a pac-gum at *(x, y)* with the default points value.
+        """
         # Pass a tuple to match the Entity base class interface
         super().__init__((x, y))
         self.sprite = '.'
@@ -26,6 +29,9 @@ class SuperPacgum(Entity):
     Awards more points and grants Pac-Man the ability to eat ghosts.
     """
     def __init__(self, x: int, y: int) -> None:
+        """
+        Initialize a super pac-gum at *(x, y)* with its blinking timer.
+        """
         super().__init__((x, y))
         self.sprite = 'O'
         self.points = 50

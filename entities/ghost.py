@@ -2,6 +2,7 @@ from __future__ import annotations  # to avoid circular import
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 import random
+import sys
 
 from entities.entity import Entity
 
@@ -29,6 +30,10 @@ class Ghost(Entity, ABC):
     """
 
     def __init__(self, score: int, pos: tuple[int, int], cooldown: int = 2):
+        """
+        Initialize a ghost at *pos* with its spawn point and a respawn
+        cooldown, in tiles-per-tick equivalent, used while dead.
+        """
         super().__init__(pos)
         self.score: int = score
         self.spawn: tuple[int, int] = pos
@@ -164,6 +169,10 @@ class Ghost(Entity, ABC):
                       monitor: "Monitor",
                       current: str | None = None
                       ) -> list[tuple[int, int]]:
+        """
+        Return the walkable neighbour tiles around *pos*. A U-turn against
+        *current* is forbidden unless it is the only option available.
+        """
         cx, cy = pos
         forbidden_dir = _OPPOSITE.get(current) if current else None
         reachable = []
@@ -203,6 +212,10 @@ class Ghost(Entity, ABC):
         self.current_path = []
 
     def choose_target_feared(self, monitor: "Monitor") -> tuple[int, int]:
+        """
+        Pick a random walkable neighbour while the ghost is edible and update
+        the current direction accordingly.
+        """
         valid_neighbors = self.possible_move(self.pos, monitor, self.direction)
         if not valid_neighbors:
             return self.pos
@@ -253,8 +266,10 @@ class Ghost(Entity, ABC):
         else:
             try:
                 target = self.choose_target(monitor)
-            except Exception:
-                raise Exception
+            except Exception as e:
+                print(f"ERROR: Ghost target selection failed: {e}\n",
+                      file=sys.stderr)
+                return False
 
         if target is None:
             return False
@@ -301,9 +316,3 @@ class Ghost(Entity, ABC):
         self.current_path = path
 
         return True
-
-    def draw(self) -> None:
-        """
-        Print the ghost each frame, to actualize the position in pygame window
-        """
-        pass

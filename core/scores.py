@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 
 
 class ScoreManager:
@@ -9,6 +10,10 @@ class ScoreManager:
     """
 
     def __init__(self, filename: str) -> None:
+        """
+        Initialize the manager around *filename* and load any existing
+        scores from it.
+        """
         self.filename: str = filename
         self.scores: list[tuple[str, int]] = []
         self.load()
@@ -38,30 +43,23 @@ class ScoreManager:
         Write the current top scores to the JSON file.
         """
         data = [{"name": n, "score": s} for n, s in self.scores]
-        with open(self.filename, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent="\t", ensure_ascii=False)
+        try:
+            with open(self.filename, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent="\t", ensure_ascii=False)
+        except OSError as e:
+            print(f"ERROR: Cannot save scores '{self.filename}': {e}\n",
+                  file=sys.stderr)
 
     def qualifies(self, score: int) -> bool:
         """
-        Return True if *score* earns a place in the top 10.
+        Return True if score earns a place in the top 10.
         """
         if len(self.scores) < 10:
             return True
         return score >= self.scores[-1][1]
 
-    def check_value(self, score: int) -> bool:
-        if score is None:
-            return False
-        elif isinstance(score, bool):
-            return False
-        elif not isinstance(score, int):
-            return False
-        elif score < 0:
-            return False
-        else:
-            return True
-
     def check_name(self, username: str) -> bool:
+        """Return True if username is at most 10 alphanumeric/space chars."""
         if len(username) > 10:
             return False
         for i in username:

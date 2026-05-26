@@ -13,6 +13,10 @@ class PacMan(Entity):
                  lives: int = 3,
                  power_duration: int = 50
                  ) -> None:
+        """
+        Initialize Pac-Man at *(x, y)* with the given number of *lives* and
+        the super pac-gum effect *power_duration* in frames.
+        """
         super().__init__((x, y))
         self.sprite = 'C'  # Classic ASCII representation
 
@@ -24,9 +28,6 @@ class PacMan(Entity):
         self.direction: Tuple[int, int] = (0, 0)
         # Buffer for "Cornering"
         self.next_direction: Tuple[int, int] = (0, 0)
-
-        # Cheats
-        self.god_mode: bool = False
 
         # Management of "Super" mode (when eating a super pac-gum)
         self.is_powered_up: bool = False
@@ -90,7 +91,9 @@ class PacMan(Entity):
         # before allowing the actual change to self.pos.
 
     def eat(self, points: int) -> None:
-        """Add points to the score."""
+        """
+        Add points to the score.
+        """
         self.score += points
         self.eating_timer = 0  # Disabled to avoid lag
 
@@ -117,7 +120,9 @@ class PacMan(Entity):
         return points
 
     def die(self) -> None:
-        """Trigger Pac-Man's death sequence."""
+        """
+        Trigger Pac-Man's death sequence.
+        """
         self.is_dying = True
         self.lives -= 1
         self.direction = (0, 0)

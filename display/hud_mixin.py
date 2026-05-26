@@ -53,43 +53,20 @@ class HudMixin:
 
         cheat_enabled = self.config.get("cheat_mode", False)
         if cheat_enabled:
-            hud_font = pygame.font.Font(_TYPO_PATH, max(8, _h * 16 // 1080))
-            bottom_y = self.screen.get_height() - max(12, _h * 25 // 1080)
-
-            if self.monitor.player.god_mode:
-                god_status = "ON"
-                color = (0, 255, 0)
-            else:
-                god_status = "OFF"
-                color = (255, 255, 255)
-
-            if self.monitor.collision:
-                collision_status = "OFF"
-            else:
-                collision_status = "ON"
-
+            active: list[str] = []
+            if not self.monitor.collision:
+                active.append("NO COLLISION")
             if self.monitor.ghosts_frozen:
-                frozen_status = "ON"
-            else:
-                frozen_status = "OFF"
-
-            cheat_list = {"collision": collision_status,
-                          "frozen": frozen_status
-                          }
-
-            if "ON" in cheat_list.values():
-                cheat_on = True
-                lists = [x for x in cheat_list if cheat_list[x] == "ON"]
-            else:
-                cheat_on = False
-
-            cheat_text = f"Cheats: [G] God Mode ({god_status})"
-            self.screen.blit(
-                hud_font.render(cheat_text, True, color), (10, bottom_y)
-            )
-            if cheat_on:
-                active_cheat_text = f"Active cheats: ({', '.join(lists)})"
+                active.append("PAUSE GHOSTS")
+            if active:
+                hud_font = pygame.font.Font(
+                    _TYPO_PATH, max(8, _h * 16 // 1080)
+                )
+                bottom_y = (
+                    self.screen.get_height() - max(12, _h * 25 // 1080)
+                )
+                text = "Active cheats: " + ", ".join(active)
                 self.screen.blit(
-                    hud_font.render(active_cheat_text, True, color),
-                    (225, bottom_y)
+                    hud_font.render(text, True, (0, 255, 0)),
+                    (10, bottom_y),
                 )

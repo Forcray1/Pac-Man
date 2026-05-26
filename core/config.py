@@ -17,6 +17,10 @@ class edited_config:
     """
 
     def __init__(self, screen: pygame.Surface) -> None:
+        """
+        Prepare fonts and the static scanline overlay used by the editor
+        for the given screen.
+        """
         self.screen = screen
         _h = screen.get_height()
         self._font_title = pygame.font.SysFont(
@@ -306,6 +310,9 @@ class edited_config:
         HOLD_REPEAT = 3  # frames between repeats while held
 
         def apply_delta(v: int, delta: int) -> int:
+            """
+            Add delta to v, wrapping around [INT_MIN, INT_MAX].
+            """
             result = v + delta
             if result < INT_MIN:
                 return INT_MAX   # wrap downward

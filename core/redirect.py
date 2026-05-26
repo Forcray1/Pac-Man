@@ -15,12 +15,20 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Redirect:
     def __init__(self, config: dict[str, Any], config_path: str) -> None:
+        """
+        Initialize the hub screen with the parsed *config* dict and the
+        path it was loaded from, so the editor can write it back.
+        """
         self.config = config
         self.config_path = config_path
         self._fan_state: str = "idle"   # idle | slowing | stopped | speeding
         self._fan_fps: float = 30.0
 
     def main_menu(self) -> None:
+        """
+        Display the hub screen and dispatch the user's clicks to the proper
+        sub-screen (play, settings, quit, fan toggle).
+        """
         pygame.init()
 
         # Display
@@ -217,7 +225,9 @@ class Redirect:
             clock.tick(FPS)
 
     def _preload_animation(self, screen: pygame.Surface, path: str) -> None:
-        """Load and cache frames for path without displaying them."""
+        """
+        Load and cache frames for path without displaying them.
+        """
         if not path or not os.path.isdir(path):
             return
         sw, sh = screen.get_size()
@@ -291,6 +301,9 @@ class Redirect:
             clock.tick(fps)
 
     def to_game(self) -> None:
+        """
+        Play the arcade transition, run the game, then play it backward.
+        """
         anim_path = os.path.join(
             _ROOT, "animation", "TransitionToArcade"
         )
@@ -300,12 +313,22 @@ class Redirect:
         self.launch_animation(anim_path, 30, reverse=True)
 
     def to_computer(self) -> None:
+        """
+        Play the desktop transition, open the config editor, save the new
+        config back to disk and reload it.
+        """
         anim_path = os.path.join(
             _ROOT, "animation", "TransitionToDesktop"
         )
         self.launch_animation(anim_path, 30)
-        with open(self.config_path, encoding="utf-8") as f:
-            config = json.load(f)
+        try:
+            with open(self.config_path, encoding="utf-8") as f:
+                config = json.load(f)
+        except (OSError, json.JSONDecodeError) as e:
+            print(f"ERROR: Cannot read config '{self.config_path}': {e}\n",
+                  file=sys.stderr)
+            self.launch_animation(anim_path, 30, reverse=True)
+            return
 
         screen = pygame.display.get_surface()
         if screen is None:
@@ -315,14 +338,23 @@ class Redirect:
         editor = edited_config(screen)
         updated = editor.draw_window(config)
 
-        with open(self.config_path, "w", encoding="utf-8") as f:
-            json.dump(updated, f, indent="\t")
+        try:
+            with open(self.config_path, "w", encoding="utf-8") as f:
+                json.dump(updated, f, indent="\t")
+        except OSError as e:
+            print(f"ERROR: Cannot save config '{self.config_path}': {e}\n",
+                  file=sys.stderr)
+            self.launch_animation(anim_path, 30, reverse=True)
+            return
         parsed = parser(self.config_path)
         if parsed:
             self.config = parsed
         self.launch_animation(anim_path, 30, reverse=True)
 
     def on_fan(self) -> None:
+        """
+        Toggle the background fan between slowing-down and speeding-up.
+        """
         if self._fan_state in ("idle", "speeding"):
             self._fan_state = "slowing"
         else:  # slowing or stopped

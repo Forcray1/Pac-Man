@@ -146,10 +146,12 @@ In frightened mode, all ghosts move randomly and avoid 180° turns. Ghosts canno
 ### Cheat mode
 
 Accessible via `C` during the game (if `cheat_mode` is enabled in the config). Available cheats:
-- **God mode** (`G` key): Pac-Man becomes invincible.
-- **Next level** (via cheat menu): Skip to the next level instantly.
-- **Ghost freeze** (via cheat menu): Stop all ghost movement.
-- **Extra life** (via cheat menu): Add a life to the player.
+- **No collision**: Pac-Man is no longer killed by ghosts.
+- **Pause ghosts**: Stop all ghost movement.
+- **Add life**: Grant Pac-Man one extra life (current count shown next to the entry).
+- **Next level**: Skip to the next level instantly.
+
+Active cheats are listed at the bottom-left of the HUD in green while in play.
 
 ---
 
@@ -380,7 +382,13 @@ Timeline :
 26/05/2026:
 	mlorenzo:
 		- Raised the recursion limit cap up to 10000 for maze generation, to not crash out for large maze due to python recursion limit
-		
+		- core/parser.py rewritten:
+			- Lines starting with `#` are parsed as comms before json parse the file entirely
+			- Factored the per-key checks into `_is_int` and `_is_bool` helpers + a DEFAULTS dict
+			- Missing keys now use the default value with a warning, instead of refusing to start
+		- Added the docstrings
+		- Removed god mode as it's the same than collision
+		- Add a cheat to add one more life
 ```
 
 # Edits since last commit:

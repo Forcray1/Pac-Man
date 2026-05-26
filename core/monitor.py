@@ -1,3 +1,4 @@
+import sys
 from typing import Any
 
 from entities.player import PacMan
@@ -28,6 +29,11 @@ class Monitor:
         ghosts: list[Ghost] | None = None,
         config: dict[str, Any] | None = None,
     ) -> None:
+        """
+        Initialize the monitor with the maze *grid*, the *player*, and the
+        optional list of *ghosts*. Pac-gum and super pac-gum objects are
+        extracted from the grid on the fly.
+        """
         self.grid: list[list[int]] = grid
         self.rows: int = len(grid)
         self.cols: int = len(grid[0]) if self.rows else 0
@@ -174,6 +180,10 @@ class Monitor:
         return monitor
 
     def _change_maze(self) -> None:
+        """
+        Regenerate the maze in place while preserving the position of every
+        entity and remaining pac-gum.
+        """
         import random
 
         maze_width = (self.cols - 1) // 2
@@ -331,8 +341,10 @@ class Monitor:
                 while ghost.move_accumulator >= 1.0:
                     try:
                         ghost.move(self.grid, self)
-                    except Exception:
-                        raise Exception
+                    except Exception as e:
+                        print(f"ERROR: Ghost movement failed: {e}\n",
+                              file=sys.stderr)
+                        break
                     ghost.move_accumulator -= 1.0
 
         for item in self.all_items:
@@ -410,7 +422,7 @@ class Monitor:
                     base = int(self.config.get("points_per_ghost", 200))
                     self.player.eat_ghost(base)
                     ghost.is_eaten()
-                elif self.collision and not self.player.god_mode:
+                elif self.collision:
                     self.player.die()
 
     def is_cleared(self) -> bool:

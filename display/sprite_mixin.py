@@ -10,7 +10,9 @@ from display._maze_utils import _ROOT
 
 
 class SpritesMixin:
-    """Handles image loading and sprite scaling."""
+    """
+    Handles image loading and sprite scaling.
+    """
 
     if TYPE_CHECKING:
         TILE_SIZE: int
@@ -156,6 +158,7 @@ class SpritesMixin:
                 self.raw_images["texts"] = None
 
     def scale_sprites(self) -> None:
+        """Rescale every raw sprite to the current tile size for rendering."""
         self.sprites: dict[
             str, pygame.Surface | list[pygame.Surface | None] | None
         ] = {}

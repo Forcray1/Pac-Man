@@ -17,6 +17,10 @@ from display.sprite_mixin import SpritesMixin
 
 class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
     def __init__(self, config: dict[str, Any]):
+        """
+        Build the Pygame window, load assets, and instantiate the monitor
+        for the first level from *config*.
+        """
         pygame.init()
 
         # --- 1. SCREEN BOUNDS DETECTION ---
@@ -120,8 +124,11 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         self._preload_raw_images()
         self.scale_sprites()
 
-    def _refit_window(self) -> None:
-        """Recompute rows/cols, tile size, and resize the window."""
+    def _fit_maze_to_screen(self) -> None:
+        """
+        Recompute rows, columns and tile size so the (possibly resized)
+        maze still fits inside the fullscreen window.
+        """
         self.rows = len(self.monitor.grid)
         self.cols = len(self.monitor.grid[0])
         available_w = self.screen_max_w * 0.85
@@ -184,7 +191,6 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                     elif result == "win":
                         score = self.monitor.player.score
                         lives = self.monitor.player.lives
-                        god_mode = self.monitor.player.god_mode
                         ghosts_frozen = self.monitor.ghosts_frozen
                         collision = self.monitor.collision
                         current_level += 1
@@ -193,11 +199,10 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                         self.maze_width += 3
                         self.maze_height += 3
                         self.monitor = self._build_monitor()
-                        self._refit_window()
+                        self._fit_maze_to_screen()
 
                         self.monitor.player.score = score
                         self.monitor.player.lives = lives
-                        self.monitor.player.god_mode = god_mode
                         self.monitor.ghosts_frozen = ghosts_frozen
                         self.monitor.collision = collision
                         continue
@@ -206,13 +211,17 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                         break
 
     def _run_game(self, level: int = 1) -> str:
-        """Delegate the game loop to Game and return its result."""
+        """
+        Delegate the game loop to Game and return its result.
+        """
         return Game(self.monitor, self.config, self, level).run()
 
     def render_frame(
         self, elapsed: int, fps: int, max_time: int, level: int
     ) -> None:
-        """Draw one frame to the screen."""
+        """
+        Draw one frame to the screen.
+        """
         self.screen.fill((0, 0, 0))
         self.draw_maze()
         self.draw_items()
