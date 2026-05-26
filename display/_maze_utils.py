@@ -7,6 +7,10 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
 sys.path.insert(0, os.path.join(_ROOT, "mazegenerator-00001-py3-none-any"))
 
+# The maze generator uses recursion up to width*height deep.
+# Raise the limit so large mazes don't hit Python's default cap of 1000.
+sys.setrecursionlimit(10000)
+
 from mazegenerator.mazegenerator import MazeGenerator  # noqa: E402
 
 

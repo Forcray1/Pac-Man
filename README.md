@@ -377,6 +377,10 @@ Timeline :
 		- Cleaned the visuals
 		- Changed the creation of a new window for each transition to a reuse of the original one
 		- Changed the max/min values for config, and maze size because of the performances.
+26/05/2026:
+	mlorenzo:
+		- Raised the recursion limit cap up to 10000 for maze generation, to not crash out for large maze due to python recursion limit
+		
 ```
 
 # Edits since last commit:
