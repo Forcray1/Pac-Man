@@ -5,6 +5,7 @@ import pygame
 
 from core.parser import parser
 from core.redirect import Redirect
+from mazegenerator.mazegenerator import MazeGenerator  # noqa: E402
 
 
 def main() -> None:
@@ -16,6 +17,14 @@ def main() -> None:
         )
         sys.exit(1)
     else:
+        try:
+            maze = MazeGenerator((10, 10))
+            if not maze.maze:
+                raise ValueError
+        except ValueError:
+            print("ERROR: maze generator not working", file=sys.stderr)
+        except Exception:
+            print("ERROR: maze generator not found", file=sys.stderr)
         if not sys.argv[1].endswith(".json"):
             print("ERROR: the configuration file must be a json",
                   file=sys.stderr)

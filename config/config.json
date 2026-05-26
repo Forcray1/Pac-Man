@@ -1,14 +1,14 @@
 {
-	"level": 999,
-	"width": 50,
-	"height": 50,
-	"difficulty": 5,
+	"level": 1,
+	"width": 6,
+	"height": 6,
+	"difficulty": 1,
 	"points_per_pacgum": 50,
-	"points_per_super_pacgum": 100,
+	"points_per_super_pacgum": 50,
 	"points_per_ghost": 500,
 	"seed": 42,
-	"level_max_time": 999,
+	"level_max_time": 90,
 	"cheat_mode": "True",
-	"super_time": 999,
+	"super_time": 15,
 	"practice": "False"
 }
