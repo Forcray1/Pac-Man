@@ -194,19 +194,33 @@ class RendererMixin:
                     # before drawing its transparent lines
                     pygame.draw.rect(self.screen, (0, 0, 0), rect)
 
+                    # If we're on a border tile but no border sprite was
+                    # appended (only the line-overlay surface), the asset
+                    # is missing - draw an ASCII '#' as fallback.
+                    is_edge = (
+                        y == 0 or y == self.rows - 1
+                        or x == 0 or x == self.cols - 1
+                    )
+                    if is_edge and len(sprites) <= 1:
+                        self.screen.blit(
+                            self.ascii_glyph("wall"), rect.topleft
+                        )
+
                     if sprites:
                         for sprite in sprites:
                             self.screen.blit(sprite, rect.topleft)
                     else:
-                        pygame.draw.rect(self.screen, (0, 0, 200), rect)
-                        # Fallback blue
+                        self.screen.blit(
+                            self.ascii_glyph("wall"), rect.topleft
+                        )
                 else:
                     floor = self.sprites.get("floor")
                     if floor and isinstance(floor, pygame.Surface):
                         self.screen.blit(floor, rect.topleft)
                     else:
+                        # Floor missing - keep a black background; the
+                        # ASCII fallback for floor is a blank glyph.
                         pygame.draw.rect(self.screen, (0, 0, 0), rect)
-                        # Fallback floor
 
     def _update_dimensions(self, new_tile_size: int) -> None:
         """
@@ -237,20 +251,21 @@ class RendererMixin:
                     else "Pacgum"
                 )
                 sprite = self.sprites.get(sprite_key)
+                if not (sprite and isinstance(sprite, pygame.Surface)):
+                    sprite = self.ascii_glyph(sprite_key)
 
-                if sprite and isinstance(sprite, pygame.Surface):
-                    # Compute position to centre the sprite in the cell
-                    pos_x = (
-                        self.offset_x
-                        + (gum.x * self.TILE_SIZE)
-                        + (self.TILE_SIZE - sprite.get_width()) // 2
-                    )
-                    pos_y = (
-                        self.offset_y
-                        + (gum.y * self.TILE_SIZE)
-                        + (self.TILE_SIZE - sprite.get_height()) // 2
-                    )
-                    self.screen.blit(sprite, (pos_x, pos_y))
+                # Compute position to centre the sprite in the cell
+                pos_x = (
+                    self.offset_x
+                    + (gum.x * self.TILE_SIZE)
+                    + (self.TILE_SIZE - sprite.get_width()) // 2
+                )
+                pos_y = (
+                    self.offset_y
+                    + (gum.y * self.TILE_SIZE)
+                    + (self.TILE_SIZE - sprite.get_height()) // 2
+                )
+                self.screen.blit(sprite, (pos_x, pos_y))
 
     def draw_player(self) -> None:
         """
@@ -277,12 +292,13 @@ class RendererMixin:
             anim_dir = dir_map.get(player.angle, "Right")
 
             frames = self.sprites.get(f"Pacman_{anim_dir}")
+            base_sprite = None
             if frames and isinstance(frames, list):
                 # 4 frames per animation, ~100 ms per frame
                 frame_index = (pygame.time.get_ticks() // 100) % 4
                 base_sprite = frames[frame_index]
-            else:
-                base_sprite = None
+            if base_sprite is None:
+                base_sprite = self.ascii_glyph(f"Pacman_{anim_dir}")
         else:
             # Death sequence
             if player.death_start_time == 0:
@@ -290,14 +306,15 @@ class RendererMixin:
 
             elapsed = pygame.time.get_ticks() - player.death_start_time
             frames = self.sprites.get("Pacman_Death")
+            base_sprite = None
             if frames and isinstance(frames, list):
                 frame_index = elapsed // 100
                 if frame_index >= len(frames):
                     # Hold on the last frame
                     frame_index = len(frames) - 1
                 base_sprite = frames[frame_index]
-            else:
-                base_sprite = None
+            if base_sprite is None:
+                base_sprite = self.ascii_glyph("Pacman_Death")
 
         if base_sprite:
             # Convert to pixel coordinates
@@ -423,11 +440,24 @@ class RendererMixin:
                 frames = None
 
             # --- Drawing with double validation ---
-            if frames and isinstance(frames, list):
+            sprite = None
+            if frames and isinstance(frames, list) and len(frames) > 0:
                 frame_index = (pygame.time.get_ticks() // 150) % len(frames)
                 sprite = frames[frame_index]
 
-                if sprite:  # CRITICAL: only blit if the sprite is valid
-                    pos_x = self.offset_x + render_x * self.TILE_SIZE
-                    pos_y = self.offset_y + render_y * self.TILE_SIZE
-                    self.screen.blit(sprite, (pos_x, pos_y))
+            if sprite is None:
+                # Pick the right ASCII glyph by ghost state/class.
+                if ghost.is_dead:
+                    sprite = self.ascii_glyph("Dead")
+                elif ghost.eatable:
+                    if (player.power_timer < 90 and
+                            (player.power_timer // 5) % 2 == 0):
+                        sprite = self.ascii_glyph("Frighten_End")
+                    else:
+                        sprite = self.ascii_glyph("Frighten")
+                else:
+                    sprite = self.ascii_glyph(ghost.__class__.__name__)
+
+            pos_x = self.offset_x + render_x * self.TILE_SIZE
+            pos_y = self.offset_y + render_y * self.TILE_SIZE
+            self.screen.blit(sprite, (pos_x, pos_y))
