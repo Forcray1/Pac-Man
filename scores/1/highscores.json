@@ -20,6 +20,10 @@
 		"score": 13546
 	},
 	{
+		"name": "nicolas",
+		"score": 11850
+	},
+	{
 		"name": "Anonymous",
 		"score": 9300
 	},
@@ -33,10 +37,6 @@
 	},
 	{
 		"name": "test error",
-		"score": 7700
-	},
-	{
-		"name": "test error@",
 		"score": 7700
 	}
 ]
