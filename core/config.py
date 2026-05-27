@@ -145,6 +145,83 @@ class edited_config:
             value, bool
         )
 
+    def _modal_dims(
+        self, bw_ratio: int, min_bw: int, bh_ratio: int, min_bh: int
+    ) -> tuple[int, int, int, int]:
+        """
+        Compute a centred modal-box rectangle (bx, by, bw, bh) sized
+        proportionally to the current screen.
+        """
+        w, h = self.screen.get_size()
+        bw = min(w - 160, max(min_bw, w * bw_ratio // 1920))
+        bh = max(min_bh, h * bh_ratio // 1080)
+        return (w - bw) // 2, (h - bh) // 2, bw, bh
+
+    def _modal_fonts(
+        self, lbl_px: int, big_px: int
+    ) -> tuple[pygame.font.Font, pygame.font.Font, pygame.font.Font]:
+        """
+        Return (label, big, hint) fonts scaled to the screen height.
+        """
+        h = self.screen.get_height()
+        return (
+            pygame.font.SysFont(
+                "Courier New", max(10, h * lbl_px // 1080), bold=True),
+            pygame.font.SysFont(
+                "Courier New", max(12, h * big_px // 1080), bold=True),
+            pygame.font.SysFont(
+                "Courier New", max(8, h * 14 // 1080)),
+        )
+
+    def _draw_modal_chrome(
+        self,
+        background: pygame.Surface,
+        rect: tuple[int, int, int, int],
+        key: str,
+        hint: str,
+        font_lbl: pygame.font.Font,
+        font_hnt: pygame.font.Font,
+        bh_ref: int = 190,
+    ) -> None:
+        """
+        Render the shared modal frame: dimmed background, dark-green box,
+        amber border, four corner markers, title (>> EDIT: KEY), a thin
+        separator line below the title, and the bottom hint text.
+        """
+        bx, by, bw, bh = rect
+        w, h = self.screen.get_size()
+
+        self.screen.blit(background, (0, 0))
+        overlay = pygame.Surface((w, h), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 175))
+        self.screen.blit(overlay, (0, 0))
+
+        pygame.draw.rect(self.screen, (0, 18, 0), pygame.Rect(*rect))
+        pygame.draw.rect(self.screen, _AMBER, pygame.Rect(*rect), 2)
+        for cx, cy in (
+            (bx, by), (bx + bw, by),
+            (bx, by + bh), (bx + bw, by + bh),
+        ):
+            pygame.draw.rect(
+                self.screen, _GREEN,
+                pygame.Rect(cx - 3, cy - 3, 6, 6),
+            )
+
+        lbl = font_lbl.render(f">> EDIT: {key.upper()}", True, _AMBER)
+        self.screen.blit(
+            lbl, (bx + bw // 2 - lbl.get_width() // 2,
+                  by + bh * 18 // bh_ref))
+
+        sep_y = by + bh * 55 // bh_ref
+        pygame.draw.line(
+            self.screen, _DIM,
+            (bx + 12, sep_y), (bx + bw - 12, sep_y), 1)
+
+        hnt = font_hnt.render(hint, True, _DIM)
+        self.screen.blit(
+            hnt, (bx + bw // 2 - hnt.get_width() // 2,
+                  by + bh - bh * 28 // bh_ref))
+
     def _run_bool_menu(
         self, key: str, current_value: Any
     ) -> str | None:
@@ -153,27 +230,17 @@ class edited_config:
         Left / Right arrows switch option, Enter confirm, ESC cancel.
         Returns "True" or "False" as a string, or None on ESC.
         """
-        w, h = self.screen.get_size()
         clock = pygame.time.Clock()
-        font_lbl = pygame.font.SysFont(
-            "Courier New", max(10, h * 24 // 1080), bold=True
-        )
-        font_opt = pygame.font.SysFont(
-            "Courier New", max(12, h * 36 // 1080), bold=True
-        )
-        font_hnt = pygame.font.SysFont("Courier New", max(8, h * 14 // 1080))
-
+        font_lbl, font_opt, font_hnt = self._modal_fonts(24, 36)
         background = self.screen.copy()
-        # Normalise current value to a bool
+
         if isinstance(current_value, str):
             chosen = current_value.strip().lower() == "true"
         else:
             chosen = bool(current_value)
 
-        bw = min(w - 160, max(360, w * 480 // 1920))
-        bh = max(140, h * 190 // 1080)
-        bx = w // 2 - bw // 2
-        by = h // 2 - bh // 2
+        rect = self._modal_dims(480, 360, 190, 140)
+        bx, by, bw, bh = rect
 
         while True:
             for event in pygame.event.get():
@@ -182,81 +249,28 @@ class edited_config:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         return None
-                    elif event.key == pygame.K_RETURN:
+                    if event.key == pygame.K_RETURN:
                         return "True" if chosen else "False"
-                    elif event.key in (
-                        pygame.K_LEFT,
-                        pygame.K_RIGHT,
-                        pygame.K_SPACE,
+                    if event.key in (
+                        pygame.K_LEFT, pygame.K_RIGHT, pygame.K_SPACE,
                     ):
                         chosen = not chosen
 
-            self.screen.blit(background, (0, 0))
-            overlay = pygame.Surface((w, h), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 175))
-            self.screen.blit(overlay, (0, 0))
-
-            box_rect = pygame.Rect(bx, by, bw, bh)
-            pygame.draw.rect(
-                self.screen, (0, 18, 0), box_rect
-            )
-            pygame.draw.rect(
-                self.screen, _AMBER, box_rect, 2
-            )
-            for cx, cy in [
-                (bx, by), (bx + bw, by),
-                (bx, by + bh), (bx + bw, by + bh),
-            ]:
-                pygame.draw.rect(
-                    self.screen, _GREEN,
-                    pygame.Rect(cx - 3, cy - 3, 6, 6),
-                )
-
-            # Label
-            lbl = font_lbl.render(
-                f">> EDIT: {key.upper()}", True, _AMBER
-            )
-            self.screen.blit(
-                lbl,
-                (bx + bw // 2 - lbl.get_width() // 2, by + bh * 18 // 190),
+            self._draw_modal_chrome(
+                background, rect, key,
+                "LEFT/RIGHT toggle      ENTER confirm      ESC cancel",
+                font_lbl, font_hnt,
             )
 
-            pygame.draw.line(
-                self.screen, _DIM,
-                (bx + 12, by + bh * 55 // 190),
-                (bx + bw - 12, by + bh * 55 // 190), 1,
-            )
-
-            # True / False options
             opt_y = by + bh * 80 // 190
             for i, label in enumerate(("True", "False")):
                 is_active = (label == "True") == chosen
                 fg = _YELLOW if is_active else _DIM
-                prefix = "[ " if is_active else "  "
-                suffix = " ]" if is_active else "  "
-                surf = font_opt.render(
-                    prefix + label + suffix, True, fg
-                )
+                wrapped = f"[ {label} ]" if is_active else f"  {label}  "
+                surf = font_opt.render(wrapped, True, fg)
                 slot_w = bw // 2
-                ox = bx + slot_w * i
-                self.screen.blit(
-                    surf,
-                    (ox + slot_w // 2 - surf.get_width() // 2,
-                     opt_y),
-                )
-
-            hnt = font_hnt.render(
-                "LEFT/RIGHT toggle      ENTER confirm"
-                "      ESC cancel",
-                True, _DIM,
-            )
-            self.screen.blit(
-                hnt,
-                (
-                    bx + bw // 2 - hnt.get_width() // 2,
-                    by + bh - bh * 28 // 190,
-                ),
-            )
+                ox = bx + slot_w * i + slot_w // 2 - surf.get_width() // 2
+                self.screen.blit(surf, (ox, opt_y))
 
             pygame.display.flip()
             clock.tick(30)
@@ -267,58 +281,36 @@ class edited_config:
         """
         Overlay a CRT-style stepper for integer fields.
         UP / DOWN arrows (or hold) increment / decrement the value.
-        Reaching 0 and pressing DOWN wraps to the maximum.
-        'difficulty' is capped at 5; all other fields at sys.maxsize.
-        Returns the new int, or None on ESC.
+        Reaching INT_MIN and pressing DOWN wraps to INT_MAX, and
+        vice versa. Returns the new int, or None on ESC.
         """
         import sys as _sys
 
-        # Per-key maximum / minimum
-        _CAPS: dict[str, int] = {"difficulty": 5,
-                                 "width": 50,
-                                 "height": 50}
-        _MINS: dict[str, int] = {"width": 3,
-                                 "height": 3,
-                                 "difficulty": 1,
-                                 "level": 1,
-                                 "level_max_time": 1}
-        INT_MAX = _CAPS.get(key, 999)
-        INT_MIN = _MINS.get(key, 0)
+        INT_MAX = {"difficulty": 5, "width": 50, "height": 50}.get(key, 999)
+        INT_MIN = {
+            "width": 3, "height": 3, "difficulty": 1,
+            "level": 1, "level_max_time": 1,
+        }.get(key, 0)
 
-        w, h = self.screen.get_size()
         clock = pygame.time.Clock()
-        font_lbl = pygame.font.SysFont(
-            "Courier New", max(10, h * 24 // 1080), bold=True
-        )
-        font_val = pygame.font.SysFont(
-            "Courier New", max(14, h * 48 // 1080), bold=True
-        )
-        font_hnt = pygame.font.SysFont("Courier New", max(8, h * 14 // 1080))
-
+        font_lbl, font_val, font_hnt = self._modal_fonts(24, 48)
         background = self.screen.copy()
         value = int(current_value)
 
-        bw = min(w - 160, max(360, w * 480 // 1920))
-        bh = max(160, h * 220 // 1080)
-        bx = w // 2 - bw // 2
-        by = h // 2 - bh // 2
+        rect = self._modal_dims(480, 360, 220, 160)
+        bx, by, bw, bh = rect
 
-        # hold-to-repeat state
-        held_key = None
-        hold_timer = 0   # frames since key was first pressed
-        HOLD_DELAY = 20  # frames before repeat kicks in
-        HOLD_REPEAT = 3  # frames between repeats while held
+        held_key: int | None = None
+        hold_timer = 0
+        HOLD_DELAY = 20
+        HOLD_REPEAT = 3
 
-        def apply_delta(v: int, delta: int) -> int:
-            """
-            Add delta to v, wrapping around [INT_MIN, INT_MAX].
-            """
-            result = v + delta
-            if result < INT_MIN:
-                return INT_MAX   # wrap downward
-            if result > INT_MAX:
-                return INT_MIN   # wrap upward
-            return result
+        def wrap(v: int) -> int:
+            if v < INT_MIN:
+                return INT_MAX
+            if v > INT_MAX:
+                return INT_MIN
+            return v
 
         while True:
             delta = 0
@@ -328,125 +320,52 @@ class edited_config:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         return None
-                    elif event.key == pygame.K_RETURN:
+                    if event.key == pygame.K_RETURN:
                         return value
-                    elif event.key == pygame.K_UP:
-                        delta = 1
-                        held_key = pygame.K_UP
+                    if event.key in (pygame.K_UP, pygame.K_DOWN):
+                        delta = 1 if event.key == pygame.K_UP else -1
+                        held_key = event.key
                         hold_timer = 0
-                    elif event.key == pygame.K_DOWN:
-                        delta = -1
-                        held_key = pygame.K_DOWN
-                        hold_timer = 0
-                if event.type == pygame.KEYUP:
-                    if event.key == held_key:
-                        held_key = None
-                        hold_timer = 0
+                elif event.type == pygame.KEYUP and event.key == held_key:
+                    held_key = None
+                    hold_timer = 0
 
-            # Hold-to-repeat logic
             if held_key is not None:
                 hold_timer += 1
-                if hold_timer >= HOLD_DELAY:
-                    remainder = hold_timer - HOLD_DELAY
-                    if remainder % HOLD_REPEAT == 0:
-                        step = 10 if remainder >= 60 else 1
-                        delta = (
-                            step if held_key == pygame.K_UP
-                            else -step
-                        )
+                remainder = hold_timer - HOLD_DELAY
+                if remainder >= 0 and remainder % HOLD_REPEAT == 0:
+                    step = 10 if remainder >= 60 else 1
+                    delta = step if held_key == pygame.K_UP else -step
 
             if delta:
-                value = apply_delta(value, delta)
+                value = wrap(value + delta)
 
-            self.screen.blit(background, (0, 0))
-            overlay = pygame.Surface((w, h), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 175))
-            self.screen.blit(overlay, (0, 0))
-
-            box_rect = pygame.Rect(bx, by, bw, bh)
-            pygame.draw.rect(
-                self.screen, (0, 18, 0), box_rect
-            )
-            pygame.draw.rect(
-                self.screen, _AMBER, box_rect, 2
-            )
-            for cx, cy in [
-                (bx, by), (bx + bw, by),
-                (bx, by + bh), (bx + bw, by + bh),
-            ]:
-                pygame.draw.rect(
-                    self.screen, _GREEN,
-                    pygame.Rect(cx - 3, cy - 3, 6, 6),
-                )
-
-            lbl = font_lbl.render(
-                f">> EDIT: {key.upper()}", True, _AMBER
-            )
-            self.screen.blit(
-                lbl,
-                (bx + bw // 2 - lbl.get_width() // 2,
-                 by + bh * 18 // 220),
+            self._draw_modal_chrome(
+                background, rect, key,
+                "UP/DOWN change value      ENTER confirm      ESC cancel",
+                font_lbl, font_hnt, bh_ref=220,
             )
 
-            pygame.draw.line(
-                self.screen, _DIM,
-                (bx + 12, by + bh * 55 // 220),
-                (bx + bw - 12, by + bh * 55 // 220), 1,
-            )
+            for txt, ratio, font, color in (
+                ("   ^   ", 62, font_lbl, _DIM),
+                (str(value), 90, font_val, _GREEN),
+                ("   v   ", 148, font_lbl, _DIM),
+            ):
+                surf = font.render(txt, True, color)
+                self.screen.blit(
+                    surf,
+                    (bx + bw // 2 - surf.get_width() // 2,
+                     by + bh * ratio // 220))
 
-            # Up arrow indicator
-            up = font_lbl.render("   ^   ", True, _DIM)
-            self.screen.blit(
-                up,
-                (bx + bw // 2 - up.get_width() // 2,
-                 by + bh * 62 // 220),
-            )
-
-            # Current value
-            val_surf = font_val.render(
-                str(value), True, _GREEN
-            )
-            self.screen.blit(
-                val_surf,
-                (bx + bw // 2 - val_surf.get_width() // 2,
-                 by + bh * 90 // 220),
-            )
-
-            # Down arrow indicator
-            dn = font_lbl.render("   v   ", True, _DIM)
-            self.screen.blit(
-                dn,
-                (bx + bw // 2 - dn.get_width() // 2,
-                 by + bh * 148 // 220),
-            )
-
-            # Cap label
             cap_txt = (
-                f"max: {INT_MAX}"
-                if INT_MAX < _sys.maxsize
+                f"max: {INT_MAX}" if INT_MAX < _sys.maxsize
                 else f"min: {INT_MIN}"
             )
-            cap_surf = font_hnt.render(
-                cap_txt, True, _DIM
-            )
+            cap_surf = font_hnt.render(cap_txt, True, _DIM)
             self.screen.blit(
                 cap_surf,
                 (bx + bw - cap_surf.get_width() - 12,
-                 by + bh * 58 // 220),
-            )
-
-            hnt = font_hnt.render(
-                "UP/DOWN change value      ENTER confirm"
-                "      ESC cancel",
-                True, _DIM,
-            )
-            self.screen.blit(
-                hnt,
-                (
-                    bx + bw // 2 - hnt.get_width() // 2,
-                    by + bh - bh * 28 // 220,
-                ),
-            )
+                 by + bh * 58 // 220))
 
             pygame.display.flip()
             clock.tick(30)
@@ -458,24 +377,15 @@ class edited_config:
         Overlay a CRT-style input box.
         Returns the raw string entered, or None on ESC.
         """
-        w, h = self.screen.get_size()
         clock = pygame.time.Clock()
-        font_lbl = pygame.font.SysFont(
-            "Courier New", max(10, h * 24 // 1080), bold=True
-        )
-        font_inp = pygame.font.SysFont(
-            "Courier New", max(12, h * 30 // 1080), bold=True
-        )
-        font_hnt = pygame.font.SysFont("Courier New", max(8, h * 14 // 1080))
-
+        font_lbl, font_inp, font_hnt = self._modal_fonts(24, 30)
         background = self.screen.copy()
+
         text = str(current_value)
         blink = 0
 
-        bw = min(w - 160, max(400, w * 580 // 1920))
-        bh = max(140, h * 190 // 1080)
-        bx = w // 2 - bw // 2
-        by = h // 2 - bh // 2
+        rect = self._modal_dims(580, 400, 190, 140)
+        bx, by, bw, bh = rect
 
         while True:
             for event in pygame.event.get():
@@ -484,66 +394,26 @@ class edited_config:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         return None
-                    elif event.key == pygame.K_RETURN:
+                    if event.key == pygame.K_RETURN:
                         return text
-                    elif event.key == pygame.K_BACKSPACE:
+                    if event.key == pygame.K_BACKSPACE:
                         text = text[:-1]
-                    else:
-                        ch = event.unicode
-                        if ch and ch.isprintable():
-                            text += ch
+                    elif event.unicode and event.unicode.isprintable():
+                        text += event.unicode
 
             blink += 1
-
-            self.screen.blit(background, (0, 0))
-            overlay = pygame.Surface((w, h), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 175))
-            self.screen.blit(overlay, (0, 0))
-
-            box_rect = pygame.Rect(bx, by, bw, bh)
-            pygame.draw.rect(self.screen, (0, 18, 0), box_rect)
-            pygame.draw.rect(
-                self.screen, _AMBER, box_rect, 2
-            )
-
-            for cx, cy in [
-                (bx, by),
-                (bx + bw, by),
-                (bx, by + bh),
-                (bx + bw, by + bh),
-            ]:
-                pygame.draw.rect(
-                    self.screen, _GREEN,
-                    pygame.Rect(cx - 3, cy - 3, 6, 6),
-                )
-
-            lbl = font_lbl.render(
-                f">> EDIT: {key.upper()}", True, _AMBER
-            )
-            lbl_x = bx + bw // 2 - lbl.get_width() // 2
-            self.screen.blit(lbl, (lbl_x, by + bh * 18 // 190))
-
-            pygame.draw.line(
-                self.screen, _DIM,
-                (bx + 12, by + bh * 55 // 190),
-                (bx + bw - 12, by + bh * 55 // 190),
-                1,
+            self._draw_modal_chrome(
+                background, rect, key,
+                "[ ENTER ] confirm      [ ESC ] cancel",
+                font_lbl, font_hnt,
             )
 
             cursor = "_" if (blink // 14) % 2 == 0 else " "
-            inp = font_inp.render(
-                text + cursor, True, _GREEN
-            )
-            inp_x = bx + bw // 2 - inp.get_width() // 2
-            self.screen.blit(inp, (inp_x, by + bh * 75 // 190))
-
-            hnt = font_hnt.render(
-                "[ ENTER ] confirm      [ ESC ] cancel",
-                True,
-                _DIM,
-            )
-            hnt_x = bx + bw // 2 - hnt.get_width() // 2
-            self.screen.blit(hnt, (hnt_x, by + bh - bh * 28 // 190))
+            inp = font_inp.render(text + cursor, True, _GREEN)
+            self.screen.blit(
+                inp,
+                (bx + bw // 2 - inp.get_width() // 2,
+                 by + bh * 75 // 190))
 
             pygame.display.flip()
             clock.tick(30)

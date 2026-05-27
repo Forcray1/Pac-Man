@@ -8,6 +8,7 @@ import pygame
 from core.game import Game
 from core.monitor import Monitor
 from core.scores import ScoreManager
+from core.sounds import get_sounds
 from display._maze_utils import _FastMazeGenerator, _maze_cache
 from display.hud_mixin import HudMixin
 from display.renderer_mixin import RendererMixin
@@ -21,7 +22,9 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         Build the Pygame window, load assets, and instantiate the monitor
         for the first level from *config*.
         """
+        pygame.mixer.pre_init(44100, -16, 2, 512)
         pygame.init()
+        get_sounds().preload_all()
 
         # --- 1. SCREEN BOUNDS DETECTION ---
         info = pygame.display.Info()
@@ -207,6 +210,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                         self.monitor.collision = collision
                         continue
                     elif result == "lose":
+                        self._run_screamer()
                         self._run_end_screen("lose", self.monitor.player.score)
                         break
 
@@ -242,6 +246,11 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         if self.reset:
             self._skip_next_ready = True  # suppress the upcoming elapsed==1
         if _trigger_ready:
+            get_sounds().stop_all_loops()
+            get_sounds().play("start", volume=0.7)
+            _ready_duration_ms = int(get_sounds().get_length("start") * 1000)
+            if _ready_duration_ms <= 0:
+                _ready_duration_ms = 2000
             pygame.event.set_blocked(None)
 
             # Tile constants for texts.png (128×224, 8×8 grid, 16 cols)
@@ -321,7 +330,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
 
             _clock = pygame.time.Clock()
             _start = pygame.time.get_ticks()
-            while pygame.time.get_ticks() - _start < 2000:
+            while pygame.time.get_ticks() - _start < _ready_duration_ms:
                 self.screen.fill((0, 0, 0))
                 self.draw_maze()
                 self.draw_items()

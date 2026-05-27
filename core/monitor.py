@@ -6,11 +6,61 @@ from entities.ghost import Ghost
 from entities.ghost_types import Blinky, Inky, Pinky, Clyde
 from entities.items import Pacgum, SuperPacgum
 from display._maze_utils import _FastMazeGenerator
+from core.sounds import get_sounds
 
 EMPTY = 0
 WALL = 1
 PACGUM = 2
 SUPER_PACGUM = 3
+
+BASE_SPEED = 0.15
+POWER_BOOST = 1.2
+GHOST_DEAD_SPEED = 2.0
+GHOST_EATABLE_SPEED = 0.75
+ELROY_CRITICAL = 0.10
+ELROY_CRITICAL_SPEED = 1.20
+ELROY_WARN = 0.25
+ELROY_WARN_SPEED = 1.10
+
+
+def _build_bool_wall_grid(
+    raw_maze: list[list[int]],
+    maze_width: int,
+    maze_height: int,
+    w_ext: int,
+    h_ext: int,
+) -> list[list[bool]]:
+    """
+    Convert a MazeGenerator raw maze into a True-is-wall boolean grid
+    sized (h_ext x w_ext). Cells in raw_maze are 4-bit bitmasks: bit
+    0=N, 1=E, 2=S, 3=W indicating a closed wall on that side.
+    """
+    bool_grid = [[True] * w_ext for _ in range(h_ext)]
+    for y in range(maze_height):
+        for x in range(maze_width):
+            cell_val = raw_maze[y][x]
+            gx, gy = x * 2 + 1, y * 2 + 1
+            bool_grid[gy][gx] = (cell_val == 15)
+            if (cell_val & 1) == 0:
+                bool_grid[gy - 1][gx] = False  # N
+            if (cell_val & 2) == 0:
+                bool_grid[gy][gx + 1] = False  # E
+            if (cell_val & 4) == 0:
+                bool_grid[gy + 1][gx] = False  # S
+            if (cell_val & 8) == 0:
+                bool_grid[gy][gx - 1] = False  # W
+    return bool_grid
+
+
+def _closest(
+    cells: list[tuple[int, int]], target: tuple[int, int]
+) -> tuple[int, int]:
+    """
+    Return the cell from cells with the smallest Manhattan distance
+    to target.
+    """
+    tx, ty = target
+    return min(cells, key=lambda c: abs(c[0] - tx) + abs(c[1] - ty))
 
 
 class Monitor:
@@ -50,6 +100,7 @@ class Monitor:
         self.level: int = self.config.get("level", 0)
         self.ghosts_frozen: bool = False
         self.collision: bool = True
+        self._dot_toggle: int = 0
 
     # ------------------------------------------------------------------
     # Factory
@@ -72,110 +123,51 @@ class Monitor:
         w_ext = 2 * maze_width + 1
         h_ext = 2 * maze_height + 1
 
-        # 1. Build boolean wall grid (True = wall) — same logic as AsciiViewer
-        bool_grid = [[True for _ in range(w_ext)] for _ in range(h_ext)]
-        for y in range(maze_height):
-            for x in range(maze_width):
-                cell_val = raw_maze[y][x]
-                gx, gy = x * 2 + 1, y * 2 + 1
-                bool_grid[gy][gx] = (cell_val == 15)
-                if (cell_val & 1) == 0:
-                    bool_grid[gy - 1][gx] = False  # N
-                if (cell_val & 2) == 0:
-                    bool_grid[gy][gx + 1] = False  # E
-                if (cell_val & 4) == 0:
-                    bool_grid[gy + 1][gx] = False  # S
-                if (cell_val & 8) == 0:
-                    bool_grid[gy][gx - 1] = False  # W
+        bool_grid = _build_bool_wall_grid(
+            raw_maze, maze_width, maze_height, w_ext, h_ext)
 
-        # 2. Assign Spawn Positions
         all_walkable = [
-            (x, y) for y in range(h_ext)
-            for x in range(w_ext)
+            (x, y) for y in range(h_ext) for x in range(w_ext)
             if not bool_grid[y][x]
         ]
 
-        # Player spawn: closest to center
-        cx, cy = w_ext // 2, h_ext // 2
-        player_pos = min(
-            all_walkable,
-            key=lambda c: abs(c[0] - cx) + abs(c[1] - cy)
-        )
-
-        # Ghosts spawn: 4 corners
-        c1 = min(
-            all_walkable,
-            key=lambda c: abs(c[0] - 1) + abs(c[1] - 1)
-        )
-        c2 = min(
-            all_walkable,
-            key=lambda c: abs(c[0] - (w_ext - 2)) + abs(c[1] - 1)
-        )
-        c3 = min(
-            all_walkable,
-            key=lambda c: abs(c[0] - 1) + abs(c[1] - (h_ext - 2))
-        )
-        c4 = min(
-            all_walkable,
-            key=lambda c: (
-                abs(c[0] - (w_ext - 2))
-                + abs(c[1] - (h_ext - 2))
-            )
-        )
-        ghost_points = [c1, c2, c3, c4]
-
-        # Keep the rest for pac-gums (YES on ghost spawns)
-        reserved_spawns = {player_pos}
-        empty_cells = [
-            c for c in all_walkable if c not in reserved_spawns
+        # Player spawn at the centre; ghosts at the four corners.
+        player_pos = _closest(all_walkable, (w_ext // 2, h_ext // 2))
+        corner_targets = [
+            (1, 1), (w_ext - 2, 1),
+            (1, h_ext - 2), (w_ext - 2, h_ext - 2),
         ]
+        ghost_points = [_closest(all_walkable, t) for t in corner_targets]
 
-        # 3. Pick random super-pac-gum positions
-        corners_targets = [
-            (1, 1),                           # Haut-Gauche
-            (w_ext - 2, 1),                   # Haut-Droite
-            (1, h_ext - 2),                   # Bas-Gauche
-            (w_ext - 2, h_ext - 2)            # Bas-Droite
-        ]
+        empty_cells = [c for c in all_walkable if c != player_pos]
+        super_positions = {_closest(empty_cells, t) for t in corner_targets}
 
-        super_positions = set()
-        for target in corners_targets:
-            # On trouve la cellule marchable la plus proche de ce coin
-            best_cell = min(
-                empty_cells,
-                key=lambda c: abs(c[0] - target[0]) + abs(c[1] - target[1])
-            )
-            super_positions.add(best_cell)
-
-        # 4. Convert to int grid with pac-gum markers
         int_grid = [
             [WALL if bool_grid[y][x] else EMPTY for x in range(w_ext)]
             for y in range(h_ext)
         ]
         for (x, y) in empty_cells:
-            if (x, y) in super_positions:
-                int_grid[y][x] = SUPER_PACGUM
-            else:
-                int_grid[y][x] = PACGUM
+            int_grid[y][x] = (
+                SUPER_PACGUM if (x, y) in super_positions else PACGUM)
 
-        # 5. Initialization
         ghosts = [
             Blinky(ghost_points[0], sprite="&"),
             Pinky(ghost_points[1], sprite="&"),
             Inky(ghost_points[2], sprite="&"),
-            Clyde(ghost_points[3], sprite="&")
+            Clyde(ghost_points[3], sprite="&"),
         ]
 
         super_duration = int(config.get("super_time", 8)) * 30
-        player = PacMan(player_pos[0],
-                        player_pos[1],
-                        power_duration=super_duration)
+        player = PacMan(
+            player_pos[0], player_pos[1], power_duration=super_duration)
         monitor = cls(int_grid, player, ghosts=ghosts, config=config)
 
+        pacgum_points = config.get("p_pacgums", 10)
+        super_points = config.get("p_Spacgums", 50)
         for gum in monitor.pacgums:
-            gum.points = config.get("p_pacgums", 10)
+            gum.points = pacgum_points
         for sgum in monitor.super_pacgums:
-            sgum.points = config.get("p_Spacgums", 50)
+            sgum.points = super_points
 
         return monitor
 
@@ -188,53 +180,35 @@ class Monitor:
 
         maze_width = (self.cols - 1) // 2
         maze_height = (self.rows - 1) // 2
-        new_seed = random.randint(1, 999_999)
 
         generator = _FastMazeGenerator(
             size=(maze_width, maze_height),
             perfect=False,
-            seed=new_seed,
+            seed=random.randint(1, 999_999),
         )
-        raw_maze = generator.maze
+        bool_grid = _build_bool_wall_grid(
+            generator.maze, maze_width, maze_height, self.cols, self.rows)
 
-        # Build boolean wall grid from the new maze
-        bool_grid = [[True] * self.cols for _ in range(self.rows)]
-        for y in range(maze_height):
-            for x in range(maze_width):
-                cell_val = raw_maze[y][x]
-                gx, gy = x * 2 + 1, y * 2 + 1
-                bool_grid[gy][gx] = (cell_val == 15)
-                if (cell_val & 1) == 0:
-                    bool_grid[gy - 1][gx] = False  # N
-                if (cell_val & 2) == 0:
-                    bool_grid[gy][gx + 1] = False  # E
-                if (cell_val & 4) == 0:
-                    bool_grid[gy + 1][gx] = False  # S
-                if (cell_val & 8) == 0:
-                    bool_grid[gy][gx - 1] = False  # W
+        # Force every occupied tile to remain walkable so nothing gets stuck.
+        active_gums = [g for g in self.pacgums if g.active]
+        active_sgums = [g for g in self.super_pacgums if g.active]
+        occupied = (
+            [(self.player.x, self.player.y)]
+            + [(g.x, g.y) for g in self.ghosts]
+            + [(g.x, g.y) for g in active_gums]
+            + [(g.x, g.y) for g in active_sgums]
+        )
+        for x, y in occupied:
+            bool_grid[y][x] = False
 
-        # Force every occupied tile to remain walkable so no entity gets stuck
-        bool_grid[self.player.y][self.player.x] = False
-        for ghost in self.ghosts:
-            bool_grid[ghost.y][ghost.x] = False
-        for gum in self.pacgums:
-            if gum.active:
-                bool_grid[gum.y][gum.x] = False
-        for sgum in self.super_pacgums:
-            if sgum.active:
-                bool_grid[sgum.y][sgum.x] = False
-
-        # Rebuild int_grid: walls only, entities keep their positions
         new_grid = [
             [WALL if bool_grid[y][x] else EMPTY for x in range(self.cols)]
             for y in range(self.rows)
         ]
-        for gum in self.pacgums:
-            if gum.active:
-                new_grid[gum.y][gum.x] = PACGUM
-        for sgum in self.super_pacgums:
-            if sgum.active:
-                new_grid[sgum.y][sgum.x] = SUPER_PACGUM
+        for gum in active_gums:
+            new_grid[gum.y][gum.x] = PACGUM
+        for sgum in active_sgums:
+            new_grid[sgum.y][sgum.x] = SUPER_PACGUM
 
         self.grid = new_grid
 
@@ -272,20 +246,56 @@ class Monitor:
         """
         return [g for g in self.ghosts if g.active]
 
+    def _difficulty_factor(self) -> float:
+        """
+        Multiplier applied to every ghost's speed based on difficulty.
+        """
+        if self.difficulty == 1:
+            return 1.0
+        if self.difficulty <= 3:
+            return 1.10
+        return 1.25
+
+    def _ghost_speed(self, ghost: Ghost, remaining_ratio: float) -> float:
+        """
+        Compute the per-frame speed multiplier for a ghost given the
+        share of pac-gums still on the board.
+        """
+        factor = self._difficulty_factor()
+        if ghost.is_dead:
+            return BASE_SPEED * GHOST_DEAD_SPEED * factor
+        if ghost.eatable:
+            return BASE_SPEED * GHOST_EATABLE_SPEED * factor
+        if isinstance(ghost, Blinky):
+            if remaining_ratio <= ELROY_CRITICAL:
+                return BASE_SPEED * ELROY_CRITICAL_SPEED
+            if remaining_ratio <= ELROY_WARN:
+                return BASE_SPEED * ELROY_WARN_SPEED
+        return BASE_SPEED * factor
+
+    def _advance_ghost(self, ghost: Ghost) -> None:
+        """
+        Step a ghost forward by its current speed multiplier, consuming
+        as many whole-tile moves as the accumulator allows.
+        """
+        ghost.move_accumulator += ghost.speed_multiplier
+        while ghost.move_accumulator >= 1.0:
+            try:
+                ghost.move(self.grid, self)
+            except Exception as e:
+                print(f"ERROR: Ghost movement failed: {e}\n",
+                      file=sys.stderr)
+                break
+            ghost.move_accumulator -= 1.0
+
     def update(self) -> None:
         """
         Tick every entity managed by the monitor.
         """
-        # --- SPEED SETTINGS ---
-        # 0.12 means it takes about 8 frames to cross a tile.
-        # The smaller this value, the slower the game.
-        base_speed = 0.15
-
         self.player.prev_pos = self.player.pos
         for ghost in self.active_ghosts:
             ghost.prev_pos = ghost.pos
 
-        # Update timers and angle
         self.player.update()
         for ghost in self.ghosts:
             ghost.update()
@@ -294,58 +304,39 @@ class Monitor:
             for ghost in self.ghosts:
                 ghost.eatable = False
 
-        # --- PLAYER SPEED ---
-        # Apply base_speed (with a slight boost in Super mode)
-        boost = 1.2 if self.player.is_powered_up else 1.0
-        self.player.speed_multiplier = base_speed * boost
+        any_eatable = any(g.eatable for g in self.ghosts)
+        in_frighten = (
+            self.player.is_powered_up
+            and not self.player.is_dying
+            and any_eatable
+        )
+        if in_frighten:
+            get_sounds().music_play_loop("frighten", volume=0.6)
+        elif not self.player.is_dying:
+            get_sounds().music_play_chain(
+                "siren0_firstloop", "siren0", volume=0.7,
+            )
+        else:
+            get_sounds().music_stop()
 
+        # Player movement
+        boost = POWER_BOOST if self.player.is_powered_up else 1.0
+        self.player.speed_multiplier = BASE_SPEED * boost
         self.player.move_accumulator += self.player.speed_multiplier
         while self.player.move_accumulator >= 1.0:
             self._move_player()
             self.player.move_accumulator -= 1.0
 
-        remaining_ratio = (
-            len([g for g in self.pacgums if g.active]) / self.start_pacgums
-            if self.start_pacgums else 1.0
-        )
-
-        # --- GHOSTS SPEED ---
+        # Ghost movement
         if not self.ghosts_frozen:
+            remaining_ratio = (
+                sum(1 for g in self.pacgums if g.active) / self.start_pacgums
+                if self.start_pacgums else 1.0
+            )
             for ghost in self.active_ghosts:
-                if self.difficulty == 1:
-                    a = 1.0
-                elif self.difficulty <= 3:
-                    a = 1.10
-                else:
-                    a = 1.25
-
-                if ghost.is_dead:
-                    # Returns very fast to spawn
-                    ghost.speed_multiplier = base_speed * 2.0 * a
-                elif ghost.eatable:
-                    # Frighten ghosts are slowed
-                    ghost.speed_multiplier = base_speed * 0.75 * a
-                else:
-                    # Default speed
-                    ghost.speed_multiplier = base_speed * a
-
-                    # Elroy mode for Blinky
-                    from entities.ghost_types import Blinky as _Blinky
-                    if isinstance(ghost, _Blinky):
-                        if remaining_ratio <= 0.10:   # 90% eaten
-                            ghost.speed_multiplier = base_speed * 1.20
-                        elif remaining_ratio <= 0.25:  # 75% eaten
-                            ghost.speed_multiplier = base_speed * 1.10
-
-                ghost.move_accumulator += ghost.speed_multiplier
-                while ghost.move_accumulator >= 1.0:
-                    try:
-                        ghost.move(self.grid, self)
-                    except Exception as e:
-                        print(f"ERROR: Ghost movement failed: {e}\n",
-                              file=sys.stderr)
-                        break
-                    ghost.move_accumulator -= 1.0
+                ghost.speed_multiplier = self._ghost_speed(
+                    ghost, remaining_ratio)
+                self._advance_ghost(ghost)
 
         for item in self.all_items:
             item.update()
@@ -390,12 +381,20 @@ class Monitor:
             if gum.active and gum.x == px and gum.y == py:
                 gum.active = False
                 self.player.eat(gum.points)
+                get_sounds().play(
+                    f"eat_dot_{self._dot_toggle}", volume=0.5,
+                )
+                self._dot_toggle ^= 1
 
         # Eat super pac-gum
         for sgum in self.super_pacgums:
             if sgum.active and sgum.x == px and sgum.y == py:
                 sgum.active = False
                 self.player.eat(sgum.points)
+                get_sounds().play(
+                    f"eat_dot_{self._dot_toggle}", volume=0.8,
+                )
+                self._dot_toggle ^= 1
                 fps_jeu = 30
                 config_secondes = self.config.get("super_time", 8)
                 duration = int(config_secondes * fps_jeu)
@@ -422,8 +421,10 @@ class Monitor:
                     base = int(self.config.get("points_per_ghost", 200))
                     self.player.eat_ghost(base)
                     ghost.is_eaten()
+                    get_sounds().play("eat_ghost", volume=0.8)
                 elif self.collision:
                     self.player.die()
+                    get_sounds().play("death", volume=0.9)
 
     def is_cleared(self) -> bool:
         """

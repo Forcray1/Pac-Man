@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import os
+import random
 from typing import TYPE_CHECKING, Callable, List, Tuple
 
 import pygame
 
+from core.sounds import get_sounds
 from display._maze_utils import _ROOT
 
 _TYPO_PATH = os.path.join(_ROOT, "assets", "Typo", "ByteBounce.ttf")
@@ -91,11 +93,13 @@ class ScreensMixin:
                     elif event.key == pygame.K_DOWN:
                         selected = (selected + 1) % len(items)
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                        get_sounds().play("button", volume=0.6)
                         return actions[selected]
                 if (event.type == pygame.MOUSEBUTTONDOWN
                         and event.button == 1):
                     for i, r in enumerate(item_rects):
                         if r.collidepoint(event.pos):
+                            get_sounds().play("button", volume=0.6)
                             return actions[i]
 
             if _bg_raw is not None:
@@ -177,10 +181,12 @@ class ScreensMixin:
                     return
                 if event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_ESCAPE, pygame.K_RETURN):
+                        get_sounds().play("button", volume=0.6)
                         return
                 if (event.type == pygame.MOUSEBUTTONDOWN
                         and event.button == 1
                         and back_rect.collidepoint(event.pos)):
+                    get_sounds().play("button", volume=0.6)
                     return
 
             self.screen.fill((0, 0, 0))
@@ -249,10 +255,12 @@ class ScreensMixin:
                     return
                 if event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_ESCAPE, pygame.K_RETURN):
+                        get_sounds().play("button", volume=0.6)
                         return
                 if (event.type == pygame.MOUSEBUTTONDOWN
                         and event.button == 1
                         and back_rect.collidepoint(event.pos)):
+                    get_sounds().play("button", volume=0.6)
                     return
 
             self.screen.fill((0, 0, 0))
@@ -269,8 +277,84 @@ class ScreensMixin:
             pygame.display.flip()
             clock.tick(30)
 
+    def _run_screamer(self) -> None:
+        """
+        Jumpscare shown right before the GAME OVER screen.
+        """
+        screamer_path = os.path.join(
+            _ROOT, "assets", "Utils", "screamer.jpg"
+        )
+        if not os.path.exists(screamer_path):
+            return
+
+        try:
+            raw = pygame.image.load(screamer_path).convert()
+        except pygame.error:
+            return
+
+        w, h = self.screen.get_size()
+        clock = pygame.time.Clock()
+
+        # Brief black flash to make the jumpscare hit harder.
+        self.screen.fill((0, 0, 0))
+        pygame.display.flip()
+        pygame.event.pump()
+        pygame.time.delay(120)
+
+        duration_ms = 400
+        start = pygame.time.get_ticks()
+
+        while True:
+            elapsed = pygame.time.get_ticks() - start
+            if elapsed >= duration_ms:
+                break
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+
+            # Pulsing zoom (1.05x .. 1.20x) and violent shake.
+            pulse = 0.5 + 0.5 * abs(((elapsed // 60) % 4) - 2) / 2
+            zoom = 1.05 + 0.15 * pulse
+            shake = max(4, 18 - int(elapsed / 120))
+            sx = random.randint(-shake, shake)
+            sy = random.randint(-shake, shake)
+
+            sw = int(w * zoom)
+            sh = int(h * zoom)
+            img = pygame.transform.smoothscale(raw, (sw, sh))
+
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(
+                img, ((w - sw) // 2 + sx, (h - sh) // 2 + sy)
+            )
+
+            # Red strobe overlay every other frame for the FNAF feel.
+            if (elapsed // 80) % 2 == 0:
+                overlay = pygame.Surface((w, h), pygame.SRCALPHA)
+                overlay.fill((180, 0, 0, 60))
+                self.screen.blit(overlay, (0, 0))
+
+            pygame.display.flip()
+            clock.tick(60)
+
+        # Fade to black before handing control to the end screen.
+        fade = pygame.Surface((w, h))
+        fade.fill((0, 0, 0))
+        for alpha in range(0, 256, 32):
+            fade.set_alpha(alpha)
+            self.screen.blit(
+                pygame.transform.smoothscale(raw, (w, h)), (0, 0)
+            )
+            self.screen.blit(fade, (0, 0))
+            pygame.display.flip()
+            pygame.event.pump()
+            clock.tick(60)
+
     def _run_end_screen(self, result: str, final_score: int) -> None:
-        """Game-over or victory: show score, ask name, save it."""
+        """
+		Game-over or victory: show score, ask name, save it.
+		"""
         _w, _h = self.screen.get_size()
         font_title = pygame.font.Font(_TYPO_PATH, max(16, _h * 52 // 1080))
         font_score = pygame.font.Font(_TYPO_PATH, max(12, _h * 32 // 1080))
@@ -307,11 +391,13 @@ class ScreensMixin:
                     return
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
+                        get_sounds().play("button", volume=0.6)
                         self.score_manager.add(
                             name or "Anonymous", final_score
                         )
                         return
                     elif event.key == pygame.K_ESCAPE:
+                        get_sounds().play("button", volume=0.6)
                         return
                     elif event.key == pygame.K_BACKSPACE:
                         name = name[:-1]
@@ -326,11 +412,13 @@ class ScreensMixin:
                 if (event.type == pygame.MOUSEBUTTONDOWN
                         and event.button == 1):
                     if save_rect.collidepoint(event.pos):
+                        get_sounds().play("button", volume=0.6)
                         self.score_manager.add(
                             name or "Anonymous", final_score
                         )
                         return
                     if skip_rect.collidepoint(event.pos):
+                        get_sounds().play("button", volume=0.6)
                         return
 
             self.screen.fill((0, 0, 0))
@@ -406,6 +494,7 @@ class ScreensMixin:
                     return "quit"
                 if event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_ESCAPE, pygame.K_p):
+                        get_sounds().play("button", volume=0.6)
                         return "resume"
                     if event.key == pygame.K_UP:
                         selected = (selected - 1) % len(items)
@@ -414,11 +503,13 @@ class ScreensMixin:
                         selected = (selected + 1) % len(items)
                         blink_timer = 0
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                        get_sounds().play("button", volume=0.6)
                         return actions[selected]
                 if (event.type == pygame.MOUSEBUTTONDOWN
                         and event.button == 1):
                     for i, r in enumerate(item_rects):
                         if r.collidepoint(event.pos):
+                            get_sounds().play("button", volume=0.6)
                             return actions[i]
 
             blink_timer += 1
@@ -530,6 +621,7 @@ class ScreensMixin:
                     return "resume"
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
+                        get_sounds().play("button", volume=0.6)
                         return "resume"
                     if event.key == pygame.K_UP:
                         selected = (selected - 1) % 5
@@ -538,6 +630,7 @@ class ScreensMixin:
                         selected = (selected + 1) % 5
                         blink_timer = 0
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                        get_sounds().play("button", volume=0.6)
                         exit_with = _activate(selected)
                         if exit_with is not None:
                             return exit_with
@@ -546,6 +639,7 @@ class ScreensMixin:
                     for i, r in enumerate(item_rects):
                         if r.collidepoint(event.pos):
                             selected = i
+                            get_sounds().play("button", volume=0.6)
                             exit_with = _activate(i)
                             if exit_with is not None:
                                 return exit_with

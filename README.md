@@ -392,6 +392,9 @@ Timeline :
 27/05/2026:
 	mlorenzo:
 		- Finished the implementation of the point and click to the game itself, for a more intuitive game experience
+		- Lighten the code to be more readable and less heavy
+		- Added the screamer of loss
+		- Started adding the sounds
 ```
 
 # Edits since last commit:
@@ -399,6 +402,7 @@ Le jeu est finito
 
 # Edit a faire : 
 refaire le visuel des menus pause et cheat
+Finir d'ajouter du son pour le screamer et le jeu
 debugg
 Ajouter date de fin de projet dans le README, a la place du '[final date]'
 mettre le package sur itch

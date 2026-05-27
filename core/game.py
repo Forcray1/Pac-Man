@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any
 
 import pygame
 
+from core.sounds import get_sounds
+
 if TYPE_CHECKING:
     from core.monitor import Monitor
     from display.pygame_viewer import PygameViewer
@@ -46,14 +48,19 @@ class Game:
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    get_sounds().stop_all_loops()
                     return "quit"
                 if event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_ESCAPE, pygame.K_p):
+                        get_sounds().stop_all_loops()
                         if self.viewer._run_pause_menu() == "quit":
+                            get_sounds().stop_all_loops()
                             return "quit"
                     cheat_enabled = self.config.get("cheat_mode", False)
                     if cheat_enabled and event.key == pygame.K_c:
+                        get_sounds().stop_all_loops()
                         if self.viewer._run_cheat_menu() == "next_level":
+                            get_sounds().stop_all_loops()
                             return "win"
 
             if not self.monitor.player.is_dying:
@@ -71,6 +78,7 @@ class Game:
             elapsed += 1
 
             if self.monitor.is_cleared():
+                get_sounds().stop_all_loops()
                 return "win"
             if self.monitor.difficulty == 5:
                 if elapsed == (max_time * fps) // 2:
@@ -83,6 +91,7 @@ class Game:
                 if death_timer >= 40:  # ~1.3 s at 30 FPS
                     death_timer = 0
                     if self.monitor.player.lives <= 0:
+                        get_sounds().stop_all_loops()
                         return "lose"
                     elapsed = 0
                     self._reset_level(spawn_x, spawn_y)

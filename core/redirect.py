@@ -6,7 +6,14 @@ from typing import Any
 
 from core.config import edited_config
 from core.parser import parser
+from core.sounds import get_sounds
 from display.pygame_viewer import PygameViewer
+
+_MENU_MUSIC_FULL_VOL = 0.7
+_MENU_MUSIC_DUCKED_VOL = 0.25
+_FAN_BASE_VOL = 0.85
+_FAN_DUCK_MULT = 0.5
+_ARCADE_SFX_MASTER = 0.5
 
 
 _anim_cache: dict[tuple[str, int, int], list[pygame.Surface]] = {}
@@ -16,7 +23,7 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 class Redirect:
     def __init__(self, config: dict[str, Any], config_path: str) -> None:
         """
-        Initialize the hub screen with the parsed *config* dict and the
+        Initialize the hub screen with the parsed config dict and the
         path it was loaded from, so the editor can write it back.
         """
         self.config = config
@@ -29,7 +36,12 @@ class Redirect:
         Display the hub screen and dispatch the user's clicks to the proper
         sub-screen (play, settings, quit, fan toggle).
         """
+        pygame.mixer.pre_init(44100, -16, 2, 512)
         pygame.init()
+        get_sounds().preload_all()
+        get_sounds().menu_music_play(
+            "main_menu", volume=_MENU_MUSIC_FULL_VOL,
+        )
 
         # Display
         info = pygame.display.Info()
@@ -150,14 +162,20 @@ class Redirect:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    get_sounds().menu_music_stop()
+                    get_sounds().fan_stop()
                     pygame.quit()
                     return
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
+                        get_sounds().menu_music_stop()
+                        get_sounds().fan_stop()
                         pygame.quit()
                         return
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if btn_quit.collidepoint(mouse):
+                        get_sounds().menu_music_stop()
+                        get_sounds().fan_stop()
                         pygame.quit()
                         return
                     for poly, _label, action, launch_anim in buttons:
@@ -183,6 +201,12 @@ class Redirect:
                 if self._fan_fps >= 29.5:
                     self._fan_fps = 30.0
                     self._fan_state = "idle"
+
+            # Drive fan ambience from the animation rhythm: as the
+            # animation slows or stops, the sound fades with it.
+            get_sounds().fan_play(
+                "fan", volume=(self._fan_fps / 30.0) * _FAN_BASE_VOL,
+            )
 
             # Draw background
             if anim_frames:
@@ -308,8 +332,15 @@ class Redirect:
             _ROOT, "animation", "TransitionToArcade"
         )
         self.launch_animation(anim_path, 30)
+        get_sounds().menu_music_set_volume(_MENU_MUSIC_DUCKED_VOL)
+        get_sounds().fan_set_volume(
+            (self._fan_fps / 30.0) * _FAN_BASE_VOL * _FAN_DUCK_MULT,
+        )
+        get_sounds().set_sfx_master_volume(_ARCADE_SFX_MASTER)
         viewer = PygameViewer(self.config)
         viewer.display()
+        get_sounds().set_sfx_master_volume(1.0)
+        get_sounds().menu_music_set_volume(_MENU_MUSIC_FULL_VOL)
         self.launch_animation(anim_path, 30, reverse=True)
 
     def to_computer(self) -> None:
@@ -321,12 +352,17 @@ class Redirect:
             _ROOT, "animation", "TransitionToDesktop"
         )
         self.launch_animation(anim_path, 30)
+        get_sounds().menu_music_set_volume(_MENU_MUSIC_DUCKED_VOL)
+        get_sounds().fan_set_volume(
+            (self._fan_fps / 30.0) * _FAN_BASE_VOL * _FAN_DUCK_MULT,
+        )
         try:
             with open(self.config_path, encoding="utf-8") as f:
                 config = json.load(f)
         except (OSError, json.JSONDecodeError) as e:
             print(f"ERROR: Cannot read config '{self.config_path}': {e}\n",
                   file=sys.stderr)
+            get_sounds().menu_music_set_volume(_MENU_MUSIC_FULL_VOL)
             self.launch_animation(anim_path, 30, reverse=True)
             return
 
@@ -344,11 +380,13 @@ class Redirect:
         except OSError as e:
             print(f"ERROR: Cannot save config '{self.config_path}': {e}\n",
                   file=sys.stderr)
+            get_sounds().menu_music_set_volume(_MENU_MUSIC_FULL_VOL)
             self.launch_animation(anim_path, 30, reverse=True)
             return
         parsed = parser(self.config_path)
         if parsed:
             self.config = parsed
+        get_sounds().menu_music_set_volume(_MENU_MUSIC_FULL_VOL)
         self.launch_animation(anim_path, 30, reverse=True)
 
     def on_fan(self) -> None:
