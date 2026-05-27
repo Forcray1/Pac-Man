@@ -65,6 +65,23 @@ class ScreensMixin:
         anim_x = -250
 
         while True:
+            w, h = self.screen.get_size()
+            mouse = pygame.mouse.get_pos()
+
+            # Pre-compute clickable rects for menu items (stable hitboxes).
+            item_rects: list[pygame.Rect] = []
+            for i, label in enumerate(items):
+                lbl_surf = font_item.render(label, True, (200, 200, 200))
+                y_i = h // 2 - 80 + i * _item_gap
+                r = lbl_surf.get_rect(centerx=w // 2, y=y_i)
+                item_rects.append(r.inflate(180, 24))
+
+            # Mouse-hover selects the item under the cursor.
+            for i, r in enumerate(item_rects):
+                if r.collidepoint(mouse):
+                    selected = i
+                    break
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return "quit"
@@ -75,8 +92,12 @@ class ScreensMixin:
                         selected = (selected + 1) % len(items)
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                         return actions[selected]
+                if (event.type == pygame.MOUSEBUTTONDOWN
+                        and event.button == 1):
+                    for i, r in enumerate(item_rects):
+                        if r.collidepoint(event.pos):
+                            return actions[i]
 
-            w, h = self.screen.get_size()
             if _bg_raw is not None:
                 _bg = pygame.transform.smoothscale(_bg_raw, (w, h))
                 self.screen.blit(_bg, (0, 0))
@@ -141,15 +162,28 @@ class ScreensMixin:
         clock = pygame.time.Clock()
 
         while True:
+            w, h = self.screen.get_size()
+            mouse = pygame.mouse.get_pos()
+            back_y = h - _h * 50 // 1080
+            back_surf = font_hint.render(
+                "ENTER or ESC  -  back", True, (255, 255, 255)
+            )
+            back_rect = back_surf.get_rect(centerx=w // 2, y=back_y)
+            back_rect = back_rect.inflate(180, 24)
+            hovering_back = back_rect.collidepoint(mouse)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
                 if event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_ESCAPE, pygame.K_RETURN):
                         return
+                if (event.type == pygame.MOUSEBUTTONDOWN
+                        and event.button == 1
+                        and back_rect.collidepoint(event.pos)):
+                    return
 
             self.screen.fill((0, 0, 0))
-            _, h = self.screen.get_size()
             self._draw_centered(
                 "HIGH SCORES", font_title, (255, 255, 0), _title_y)
             scores = self.score_manager.top_scores()
@@ -164,9 +198,10 @@ class ScreensMixin:
                         line, font_row, (255, 255, 255),
                         _row_start + i * _row_gap,
                     )
+            back_color = (255, 255, 0) if hovering_back else (120, 120, 120)
             self._draw_centered(
                 "ENTER or ESC  -  back",
-                font_hint, (120, 120, 120), h - _h * 50 // 1080,
+                font_hint, back_color, back_y,
             )
             pygame.display.flip()
             clock.tick(30)
@@ -195,21 +230,41 @@ class ScreensMixin:
             ("ENTER or ESC  -  back", (120, 120, 120)),
         ]
 
+        # Index of the "back" hint in *lines* (last entry) so we can build
+        # a hit rect over it.
+        back_idx = len(lines) - 1
+
         while True:
+            w, h = self.screen.get_size()
+            mouse = pygame.mouse.get_pos()
+            back_y = _lines_start + back_idx * _line_gap
+            back_surf = font_body.render(lines[back_idx][0], True,
+                                         (255, 255, 255))
+            back_rect = back_surf.get_rect(centerx=w // 2, y=back_y)
+            back_rect = back_rect.inflate(180, 24)
+            hovering_back = back_rect.collidepoint(mouse)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
                 if event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_ESCAPE, pygame.K_RETURN):
                         return
+                if (event.type == pygame.MOUSEBUTTONDOWN
+                        and event.button == 1
+                        and back_rect.collidepoint(event.pos)):
+                    return
 
             self.screen.fill((0, 0, 0))
             self._draw_centered(
                 "INSTRUCTIONS", font_title, (255, 255, 0), _title_y
             )
             for i, (text, color) in enumerate(lines):
+                draw_color = color
+                if i == back_idx and hovering_back:
+                    draw_color = (255, 255, 0)
                 self._draw_centered(
-                    text, font_body, color,
+                    text, font_body, draw_color,
                     _lines_start + i * _line_gap)
             pygame.display.flip()
             clock.tick(30)
@@ -228,6 +283,25 @@ class ScreensMixin:
         name = ""
 
         while True:
+            w, h = self.screen.get_size()
+            mouse = pygame.mouse.get_pos()
+
+            # Compute clickable rects for SAVE / SKIP buttons.
+            btn_y = h - max(24, h * 60 // 1080)
+            save_surf = font_label.render("SAVE", True, (255, 255, 255))
+            skip_surf = font_label.render("SKIP", True, (255, 255, 255))
+            gap = max(60, w * 60 // 1920)
+            total_w = save_surf.get_width() + skip_surf.get_width() + gap
+            start_x = (w - total_w) // 2
+            save_rect = save_surf.get_rect(
+                topleft=(start_x, btn_y)
+            ).inflate(60, 20)
+            skip_rect = skip_surf.get_rect(
+                topleft=(start_x + save_surf.get_width() + gap, btn_y)
+            ).inflate(60, 20)
+            hovering_save = save_rect.collidepoint(mouse)
+            hovering_skip = skip_rect.collidepoint(mouse)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
@@ -249,9 +323,17 @@ class ScreensMixin:
                             and len(name) < 10
                         ):
                             name += ch
+                if (event.type == pygame.MOUSEBUTTONDOWN
+                        and event.button == 1):
+                    if save_rect.collidepoint(event.pos):
+                        self.score_manager.add(
+                            name or "Anonymous", final_score
+                        )
+                        return
+                    if skip_rect.collidepoint(event.pos):
+                        return
 
             self.screen.fill((0, 0, 0))
-            _, h = self.screen.get_size()
             self._draw_centered(title, font_title, t_color, h // 5)
             self._draw_centered(
                 f"Final Score: {final_score}",
@@ -265,9 +347,20 @@ class ScreensMixin:
                 name + "_", font_input,
                 (255, 255, 0), h // 2 + max(8, h * 20 // 1080),
             )
+            save_color = (255, 255, 0) if hovering_save else (180, 180, 180)
+            skip_color = (255, 255, 0) if hovering_skip else (180, 180, 180)
+            self.screen.blit(
+                font_label.render("SAVE", True, save_color),
+                (start_x, btn_y),
+            )
+            self.screen.blit(
+                font_label.render("SKIP", True, skip_color),
+                (start_x + save_surf.get_width() + gap, btn_y),
+            )
             self._draw_centered(
-                "ENTER to save  |  ESC to skip",
-                font_label, (100, 100, 100), h - max(24, h * 60 // 1080),
+                "ENTER / click SAVE  |  ESC / click SKIP",
+                font_label, (100, 100, 100),
+                btn_y - max(20, h * 36 // 1080),
             )
             pygame.display.flip()
             clock.tick(30)
@@ -289,6 +382,25 @@ class ScreensMixin:
         background = self.screen.copy()
 
         while True:
+            w, h = self.screen.get_size()
+            cy = h // 2
+            mouse = pygame.mouse.get_pos()
+
+            # Build clickable rects for each pause-menu item.
+            item_rects: list[pygame.Rect] = []
+            for i, label in enumerate(items):
+                lbl_surf = font_item.render(label, True, (200, 200, 200))
+                y_i = cy - max(8, _h * 16 // 1080) + i * _item_gap
+                r = lbl_surf.get_rect(centerx=w // 2, y=y_i)
+                item_rects.append(r.inflate(180, 24))
+
+            for i, r in enumerate(item_rects):
+                if r.collidepoint(mouse):
+                    if selected != i:
+                        blink_timer = 0
+                    selected = i
+                    break
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return "quit"
@@ -303,10 +415,13 @@ class ScreensMixin:
                         blink_timer = 0
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                         return actions[selected]
+                if (event.type == pygame.MOUSEBUTTONDOWN
+                        and event.button == 1):
+                    for i, r in enumerate(item_rects):
+                        if r.collidepoint(event.pos):
+                            return actions[i]
 
             blink_timer += 1
-            w, h = self.screen.get_size()
-            cy = h // 2
 
             # Frozen game frame + dark overlay
             self.screen.blit(background, (0, 0))
@@ -363,7 +478,53 @@ class ScreensMixin:
 
         background = self.screen.copy()
 
+        def _activate(idx: int) -> str | None:
+            """Apply the selected cheat. Returns 'resume'/'next_level' if
+            the menu should exit, else None."""
+            if idx == 0:
+                self.monitor.collision = not self.monitor.collision
+            elif idx == 1:
+                self.monitor.ghosts_frozen = (
+                    not self.monitor.ghosts_frozen
+                )
+            elif idx == 2:
+                self.monitor.player.lives += 1
+            elif idx == 3:
+                return "next_level"
+            elif idx == 4:
+                return "resume"
+            return None
+
         while True:
+            w, h = self.screen.get_size()
+            cy = h // 2
+            mouse = pygame.mouse.get_pos()
+
+            collision_tag = "[OFF]" if self.monitor.collision else "[ON]"
+            ghosts_tag = "[ON]" if self.monitor.ghosts_frozen else "[OFF]"
+            display_items = [
+                f"NO COLLISION  {collision_tag}",
+                f"PAUSE GHOSTS  {ghosts_tag}",
+                f"ADD LIFE      ({self.monitor.player.lives})",
+                "NEXT LEVEL",
+                "RESUME",
+            ]
+
+            # Build clickable rects for each cheat item.
+            item_rects: list[pygame.Rect] = []
+            for i, label in enumerate(display_items):
+                lbl_surf = font_item.render(label, True, (200, 200, 200))
+                y_i = cy - max(14, _h * 36 // 1080) + i * _item_gap
+                r = lbl_surf.get_rect(centerx=w // 2, y=y_i)
+                item_rects.append(r.inflate(220, 24))
+
+            for i, r in enumerate(item_rects):
+                if r.collidepoint(mouse):
+                    if selected != i:
+                        blink_timer = 0
+                    selected = i
+                    break
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return "resume"
@@ -377,34 +538,20 @@ class ScreensMixin:
                         selected = (selected + 1) % 5
                         blink_timer = 0
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
-                        if selected == 0:
-                            self.monitor.collision = (
-                                not self.monitor.collision
-                            )
-                        elif selected == 1:
-                            self.monitor.ghosts_frozen = (
-                                not self.monitor.ghosts_frozen
-                            )
-                        elif selected == 2:
-                            self.monitor.player.lives += 1
-                        elif selected == 3:
-                            return "next_level"
-                        elif selected == 4:
-                            return "resume"
+                        exit_with = _activate(selected)
+                        if exit_with is not None:
+                            return exit_with
+                if (event.type == pygame.MOUSEBUTTONDOWN
+                        and event.button == 1):
+                    for i, r in enumerate(item_rects):
+                        if r.collidepoint(event.pos):
+                            selected = i
+                            exit_with = _activate(i)
+                            if exit_with is not None:
+                                return exit_with
+                            break
 
             blink_timer += 1
-            collision_tag = "[OFF]" if self.monitor.collision else "[ON]"
-            ghosts_tag = "[ON]" if self.monitor.ghosts_frozen else "[OFF]"
-            display_items = [
-                f"NO COLLISION  {collision_tag}",
-                f"PAUSE GHOSTS  {ghosts_tag}",
-                f"ADD LIFE      ({self.monitor.player.lives})",
-                "NEXT LEVEL",
-                "RESUME",
-            ]
-
-            w, h = self.screen.get_size()
-            cy = h // 2
 
             # Frozen game frame + dark overlay
             self.screen.blit(background, (0, 0))

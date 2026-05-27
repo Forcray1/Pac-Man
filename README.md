@@ -389,6 +389,9 @@ Timeline :
 		- Added the docstrings
 		- Removed god mode as it's the same than collision
 		- Add a cheat to add one more life
+27/05/2026:
+	mlorenzo:
+		- Finished the implementation of the point and click to the game itself, for a more intuitive game experience
 ```
 
 # Edits since last commit:
