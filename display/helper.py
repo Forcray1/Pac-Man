@@ -2,7 +2,7 @@ import os
 
 import pygame
 
-from display._maze_utils import _ROOT
+from display._maze_utils import _ROOT, _safe_font
 
 _TYPO_PATH = os.path.join(_ROOT, "assets", "Typo", "ByteBounce.ttf")
 
@@ -14,14 +14,14 @@ class Helper:
     """
 
     DURATION_IN = 350    # ms slide-in
-    DURATION_HOLD = 2600 # ms hold
+    DURATION_HOLD = 2600  # ms hold
     DURATION_OUT = 450   # ms slide-out
-    DEFAULT_DELAY = 1000 # ms before the helper starts sliding in
+    DEFAULT_DELAY = 1000  # ms before the helper starts sliding in
 
     def __init__(self, screen_w: int, screen_h: int) -> None:
         self.sw = screen_w
         self.sh = screen_h
-        self.font = pygame.font.Font(
+        self.font = _safe_font(
             _TYPO_PATH, max(14, screen_h * 26 // 1080)
         )
         self.text = ""

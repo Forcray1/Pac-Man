@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Callable, List, Tuple
 import pygame
 
 from core.sounds import get_sounds
-from display._maze_utils import _ROOT
+from display._maze_utils import _ROOT, _safe_font
 from display.helper import get_helper
 
 _TYPO_PATH = os.path.join(_ROOT, "assets", "Typo", "ByteBounce.ttf")
@@ -34,7 +34,7 @@ class ScreensMixin:
         Main menu. Returns 'play', 'highscores', 'instructions', 'quit'.
         """
         _w, _h = self.screen.get_size()
-        font_item = pygame.font.Font(_TYPO_PATH, max(40, _h * 72 // 1080))
+        font_item = _safe_font(_TYPO_PATH, max(40, _h * 72 // 1080))
 
         LOGO_CENTER_X_RATIO = 0.527  # 0.0 = left edge, 1.0 = right edge
         LOGO_CENTER_Y = 180  # pixels from the top of the screen
@@ -161,9 +161,9 @@ class ScreensMixin:
     def _run_highscores(self) -> None:
         """Show top-10 leaderboard. ENTER or ESC to go back."""
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.Font(_TYPO_PATH, max(14, _h * 44 // 1080))
-        font_row = pygame.font.Font(_TYPO_PATH, max(10, _h * 26 // 1080))
-        font_hint = pygame.font.Font(_TYPO_PATH, max(10, _h * 22 // 1080))
+        font_title = _safe_font(_TYPO_PATH, max(14, _h * 44 // 1080))
+        font_row = _safe_font(_TYPO_PATH, max(10, _h * 26 // 1080))
+        font_hint = _safe_font(_TYPO_PATH, max(10, _h * 22 // 1080))
         _title_y = max(10, _h * 30 // 1080)
         _row_start = max(50, _h * 100 // 1080)
         _row_gap = max(14, _h * 36 // 1080)
@@ -219,8 +219,8 @@ class ScreensMixin:
     def _run_instructions(self) -> None:
         """Show controls and rules. ENTER or ESC to go back."""
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.Font(_TYPO_PATH, max(14, _h * 44 // 1080))
-        font_body = pygame.font.Font(_TYPO_PATH, max(10, _h * 24 // 1080))
+        font_title = _safe_font(_TYPO_PATH, max(14, _h * 44 // 1080))
+        font_body = _safe_font(_TYPO_PATH, max(10, _h * 24 // 1080))
         _title_y = max(10, _h * 30 // 1080)
         _lines_start = max(50, _h * 110 // 1080)
         _line_gap = max(16, _h * 38 // 1080)
@@ -364,13 +364,13 @@ class ScreensMixin:
 
     def _run_end_screen(self, result: str, final_score: int) -> None:
         """
-		Game-over or victory: show score, ask name, save it.
-		"""
+        Game-over or victory: show score, ask name, save it.
+        """
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.Font(_TYPO_PATH, max(16, _h * 52 // 1080))
-        font_score = pygame.font.Font(_TYPO_PATH, max(12, _h * 32 // 1080))
-        font_label = pygame.font.Font(_TYPO_PATH, max(10, _h * 26 // 1080))
-        font_input = pygame.font.Font(_TYPO_PATH, max(14, _h * 38 // 1080))
+        font_title = _safe_font(_TYPO_PATH, max(16, _h * 52 // 1080))
+        font_score = _safe_font(_TYPO_PATH, max(12, _h * 32 // 1080))
+        font_label = _safe_font(_TYPO_PATH, max(10, _h * 26 // 1080))
+        font_input = _safe_font(_TYPO_PATH, max(14, _h * 38 // 1080))
         clock = pygame.time.Clock()
 
         title = "YOU WIN!" if result == "win" else "GAME OVER"
@@ -467,9 +467,9 @@ class ScreensMixin:
     def _run_pause_menu(self) -> str:
         """Overlay pause menu. Returns 'resume' or 'quit'."""
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.Font(_TYPO_PATH, max(14, _h * 46 // 1080))
-        font_item = pygame.font.Font(_TYPO_PATH, max(10, _h * 28 // 1080))
-        font_hint = pygame.font.Font(_TYPO_PATH, max(8, _h * 16 // 1080))
+        font_title = _safe_font(_TYPO_PATH, max(14, _h * 46 // 1080))
+        font_item = _safe_font(_TYPO_PATH, max(10, _h * 28 // 1080))
+        font_hint = _safe_font(_TYPO_PATH, max(8, _h * 16 // 1080))
         _item_gap = max(20, _h * 44 // 1080)
         items = ["RESUME", "EXIT TO MAIN MENU"]
         actions = ["resume", "quit"]
@@ -570,9 +570,9 @@ class ScreensMixin:
 
     def _run_cheat_menu(self) -> str:
         _w, _h = self.screen.get_size()
-        font_title = pygame.font.Font(_TYPO_PATH, max(14, _h * 46 // 1080))
-        font_item = pygame.font.Font(_TYPO_PATH, max(10, _h * 26 // 1080))
-        font_hint = pygame.font.Font(_TYPO_PATH, max(8, _h * 16 // 1080))
+        font_title = _safe_font(_TYPO_PATH, max(14, _h * 46 // 1080))
+        font_item = _safe_font(_TYPO_PATH, max(10, _h * 26 // 1080))
+        font_hint = _safe_font(_TYPO_PATH, max(8, _h * 16 // 1080))
         _item_gap = max(18, _h * 40 // 1080)
         selected = 0
         clock = pygame.time.Clock()

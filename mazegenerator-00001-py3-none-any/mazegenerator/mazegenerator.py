@@ -1,4 +1,5 @@
 import random
+from collections import deque
 from typing import Iterator
 
 
@@ -120,36 +121,30 @@ class MazeGenerator:
             self._maze[y][x] = self._maze[y][x] & (~code)
             self._generate_maze(nx, ny, opp_code)
 
-    def _walk_rec(self, distance: int, x: int, y: int,
-                  visited: list[list[int]], ways: str) -> str | bool:
+    def _find_short_path(self) -> None:
         directions = [(0, 1, 4, 'S'), (1, 0, 2, 'E'),
                       (-1, 0, 8, 'W'), (0, -1, 1, 'N')]
-        if x == self._exitx and y == self._exity:
-            return ways
-        if distance == 0:
-            return False
-        visited[y][x] = 1
-        for dx, dy, code, way in directions:
-            if (
-                    (self._maze[y][x] & code) == 0 and 0 <= x+dx < self._width
-                    and 0 <= y+dy < self._height and visited[y+dy][x+dx] == 0
-            ):
-                rec = self._walk_rec(distance-1, x+dx, y+dy,
-                                     visited, ways + way)
-                if rec is not False:
-                    return rec
-        visited[y][x] = 0
-        return False
-
-    def _find_short_path(self) -> None:
-        distance = 0
-        while distance <= self._width * self._height:
-            visited = [[0] * self._width for _ in range(self._height)]
-            ret = self._walk_rec(distance, self._entryx,
-                                 self._entryy, visited, '')
-            if ret is not False:
-                self._shortest_path = ret
-                return
-            distance += 1
+        if (self._entryx, self._entryy) == (self._exitx, self._exity):
+            self._shortest_path = ''
+            return
+        visited = [[False] * self._width for _ in range(self._height)]
+        visited[self._entryy][self._entryx] = True
+        queue: deque[tuple[int, int, str]] = deque(
+            [(self._entryx, self._entryy, '')])
+        while queue:
+            x, y, ways = queue.popleft()
+            for dx, dy, code, way in directions:
+                if (self._maze[y][x] & code) != 0:
+                    continue
+                nx, ny = x + dx, y + dy
+                if not (0 <= nx < self._width and 0 <= ny < self._height):
+                    continue
+                if visited[ny][nx]:
+                    continue
+                if (nx, ny) == (self._exitx, self._exity):
+                    self._shortest_path = ways + way
+                    return
+                visited[ny][nx] = True
+                queue.append((nx, ny, ways + way))
         print("MazeGenerator Class error: no shortest path found.")
         return

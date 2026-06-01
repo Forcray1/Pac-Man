@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 import pygame
 
-from display._maze_utils import _ROOT
+from display._maze_utils import _ROOT, _safe_font
 
 _TYPO_PATH = os.path.join(_ROOT, "assets", "Typo", "ByteBounce.ttf")
 
@@ -38,7 +38,7 @@ class HudMixin:
     ) -> None:
         """Draw score, lives, level and remaining time at the top."""
         _h = self.screen.get_height()
-        font = pygame.font.Font(_TYPO_PATH, max(10, _h * 20 // 1080))
+        font = _safe_font(_TYPO_PATH, max(10, _h * 20 // 1080))
         player = self.monitor.player
         remaining = max(0, max_time - elapsed // fps)
         text = (
@@ -59,7 +59,7 @@ class HudMixin:
             if self.monitor.ghosts_frozen:
                 active.append("PAUSE GHOSTS")
             if active:
-                hud_font = pygame.font.Font(
+                hud_font = _safe_font(
                     _TYPO_PATH, max(8, _h * 16 // 1080)
                 )
                 bottom_y = (

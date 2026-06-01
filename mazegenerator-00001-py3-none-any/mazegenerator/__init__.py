@@ -1,1 +1,3 @@
-# src/mazegenerator/__init__.py
+from .mazegenerator import MazeGenerator
+
+__all__ = ["MazeGenerator"]

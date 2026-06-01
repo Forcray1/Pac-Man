@@ -416,6 +416,7 @@ The project was managed jointly by **mlorenzo** and **avauclai** over four weeks
 		- Finished the sound implementation
 		- Adapted the make packages to adapt whatever the OS is
 		- Finalized the README
+		- Corrected some crash if file not found or not accessible
 ```
 
 ---

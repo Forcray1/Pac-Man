@@ -140,15 +140,21 @@ class Redirect:
                     f" {_anim_dir}",
                     file=sys.stderr,
                 )
-            anim_frames = [
-                pygame.transform.scale(
-                    pygame.image.load(
-                        os.path.join(_anim_dir, f)
-                    ).convert(),
-                    (sw, sh),
-                )
-                for f in _anim_files
-            ]
+            anim_frames = []
+            for _f in _anim_files:
+                try:
+                    anim_frames.append(pygame.transform.scale(
+                        pygame.image.load(
+                            os.path.join(_anim_dir, _f)
+                        ).convert(),
+                        (sw, sh),
+                    ))
+                except (pygame.error, OSError) as _exc:
+                    print(
+                        f"[WARNING] Could not load animation frame "
+                        f"{_f!r}: {_exc}",
+                        file=sys.stderr,
+                    )
         anim_frame_idx = 0
         anim_timer = 0         # ms accumulator
 
@@ -226,6 +232,8 @@ class Redirect:
                             (anim_frame_idx + 1) % len(anim_frames)
                         )
                 screen.blit(anim_frames[anim_frame_idx], (0, 0))
+            else:
+                screen.fill((0, 0, 0))
 
             # # Mouse position debug (top-right)
             # pos_surf = font_hint.render(
@@ -274,13 +282,20 @@ class Redirect:
         )
         if not files:
             return
-        _anim_cache[key] = [
-            pygame.transform.scale(
-                pygame.image.load(os.path.join(path, f)).convert(),
-                (sw, sh),
-            )
-            for f in files
-        ]
+        frames: list[pygame.Surface] = []
+        for f in files:
+            try:
+                frames.append(pygame.transform.scale(
+                    pygame.image.load(os.path.join(path, f)).convert(),
+                    (sw, sh),
+                ))
+            except (pygame.error, OSError) as _exc:
+                print(
+                    f"[WARNING] Could not load animation frame "
+                    f"{f!r}: {_exc}",
+                    file=sys.stderr,
+                )
+        _anim_cache[key] = frames
 
     def _play_animation(
         self,
@@ -316,15 +331,22 @@ class Redirect:
                     file=sys.stderr,
                 )
                 return
-            _anim_cache[key] = [
-                pygame.transform.scale(
-                    pygame.image.load(
-                        os.path.join(path, f)
-                    ).convert(),
-                    (sw, sh),
-                )
-                for f in files
-            ]
+            _frames: list[pygame.Surface] = []
+            for f in files:
+                try:
+                    _frames.append(pygame.transform.scale(
+                        pygame.image.load(
+                            os.path.join(path, f)
+                        ).convert(),
+                        (sw, sh),
+                    ))
+                except (pygame.error, OSError) as _exc:
+                    print(
+                        f"[WARNING] Could not load animation frame "
+                        f"{f!r}: {_exc}",
+                        file=sys.stderr,
+                    )
+            _anim_cache[key] = _frames
         frames = _anim_cache[key]
         if reverse:
             frames = frames[::-1]
