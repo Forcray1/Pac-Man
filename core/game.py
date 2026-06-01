@@ -51,7 +51,7 @@ class Game:
                     get_sounds().stop_all_loops()
                     return "quit"
                 if event.type == pygame.KEYDOWN:
-                    if event.key in (pygame.K_ESCAPE, pygame.K_p):
+                    if event.key == pygame.K_ESCAPE:
                         get_sounds().stop_all_loops()
                         if self.viewer._run_pause_menu() == "quit":
                             get_sounds().stop_all_loops()

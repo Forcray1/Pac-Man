@@ -1,5 +1,13 @@
 CODE = entities display core
 
+# PyInstaller's --add-data separator: ':' on macOS/Linux, ';' on Windows.
+# Detected via the OS env var, which Windows sets to 'Windows_NT'.
+ifeq ($(OS),Windows_NT)
+DATA_SEP := ;
+else
+DATA_SEP := :
+endif
+
 install:
 	uv sync
 
@@ -31,10 +39,10 @@ package:
 		--clean \
 		--noconfirm \
 		--paths mazegenerator-00001-py3-none-any \
-		--add-data "assets:assets" \
-		--add-data "animation:animation" \
-		--add-data "config:config" \
-		--add-data "scores:scores" \
+		--add-data "assets$(DATA_SEP)assets" \
+		--add-data "animation$(DATA_SEP)animation" \
+		--add-data "config$(DATA_SEP)config" \
+		--add-data "scores$(DATA_SEP)scores" \
 		pac-man.py
 
 %:

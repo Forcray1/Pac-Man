@@ -229,7 +229,7 @@ class ScreensMixin:
         lines: List[Tuple[str, Tuple[int, int, int]]] = [
             ("CONTROLS", (255, 255, 0)),
             ("Arrow keys / WASD  -  Move", (200, 200, 200)),
-            ("ESC / P  -  Pause menu", (200, 200, 200)),
+            ("ESC  -  Pause menu", (200, 200, 200)),
             ("", (0, 0, 0)),
             ("RULES", (255, 255, 0)),
             ("Eat all pac-gums to win.", (200, 200, 200)),
