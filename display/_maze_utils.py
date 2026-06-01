@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
-sys.path.insert(0, os.path.join(_ROOT, "mazegenerator-00001-py3-none-any"))
 
 # The maze generator uses recursion up to width*height deep.
 # Raise the limit so large mazes don't hit Python's default cap of 1000.
@@ -19,10 +18,34 @@ _MAZE_PKG_DIR = os.path.join(_ROOT, "mazegenerator-00001-py3-none-any")
 _MAZE_WHL = os.path.join(_ROOT, "mazegenerator-00001-py3-none-any.whl")
 
 try:
+    # 1st try: package installed in the venv (normal case after make install).
     from mazegenerator.mazegenerator import MazeGenerator  # noqa: E402
 except ModuleNotFoundError:
-    # Not installed and not unpacked — try to unpack from the bundled wheel.
-    if os.path.isfile(_MAZE_WHL):
+    # 2nd try: unpacked directory bundled in the repo.
+    _resolved = False
+    if os.path.isdir(_MAZE_PKG_DIR):
+        sys.path.insert(0, _MAZE_PKG_DIR)
+        # Clear any partial cache entry left by the failed import above.
+        sys.modules.pop("mazegenerator", None)
+        sys.modules.pop("mazegenerator.mazegenerator", None)
+        try:
+            from mazegenerator.mazegenerator import (  # noqa: E402,F811
+                MazeGenerator,
+            )
+            _resolved = True
+        except ModuleNotFoundError:
+            pass
+    # 3rd try: unpack the bundled wheel, then import.
+    if not _resolved:
+        if not os.path.isfile(_MAZE_WHL):
+            print(
+                "ERROR: The 'mazegenerator' package was not found.\n"
+                f"  Unpacked dir : {_MAZE_PKG_DIR}\n"
+                f"  Wheel        : {_MAZE_WHL}\n"
+                "  Run 'make install' or restore the wheel.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
         import zipfile
         print(
             f"[INFO] Unpacking mazegenerator from bundled wheel: {_MAZE_WHL}",
@@ -37,9 +60,14 @@ except ModuleNotFoundError:
                 file=sys.stderr,
             )
             sys.exit(1)
-        # The dir is now populated; sys.path already includes it (line above).
+        if _MAZE_PKG_DIR not in sys.path:
+            sys.path.insert(0, _MAZE_PKG_DIR)
+        sys.modules.pop("mazegenerator", None)
+        sys.modules.pop("mazegenerator.mazegenerator", None)
         try:
-            from mazegenerator.mazegenerator import MazeGenerator  # noqa: E402
+            from mazegenerator.mazegenerator import (  # noqa: E402,F401,F811
+                MazeGenerator,
+            )
         except ImportError:
             print(
                 "ERROR: mazegenerator was unpacked but 'MazeGenerator' "
@@ -48,37 +76,22 @@ except ModuleNotFoundError:
                 file=sys.stderr,
             )
             sys.exit(1)
-    else:
-        print(
-            "ERROR: The 'mazegenerator' package was not found.\n"
-            f"  Looked for unpacked dir : {_MAZE_PKG_DIR}\n"
-            f"  Looked for wheel        : {_MAZE_WHL}\n"
-            "  Restore one of those files to the project root.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
 except ImportError:
     print(
         "ERROR: Could not import 'MazeGenerator' from the mazegenerator "
         "package.\n"
-        f"  File: {os.path.join(_MAZE_PKG_DIR, 'mazegenerator', 'mazegenerator.py')}\n"
+        "  File: " + os.path.join(
+            _MAZE_PKG_DIR, "mazegenerator", "mazegenerator.py"
+        ) + "\n"
         "  The file may be empty or corrupted.",
         file=sys.stderr,
     )
     sys.exit(1)
 
 
-class _FastMazeGenerator(MazeGenerator):
-    """
-    Subclass that skips the expensive iterative-deepening shortest-path
-    search. The game never reads ``shortest_path``, so skipping it has no
-    effect on gameplay while reducing large-maze generation from
-    exponential time to linear.
-    """
-
-    def _find_short_path(self) -> None:
-        pass  # Not used by the game; skip the costly IDDFS
-
+# Explicitly re-export MazeGenerator so consumers can import it from this
+# module without triggering mypy --no-implicit-reexport (enabled by --strict).
+__all__ = ["MazeGenerator", "_maze_cache", "_safe_font", "_ROOT"]
 
 # Cache for deterministic mazes: (width, height, seed) -> raw maze grid.
 # Only populated when seed > 0 (seed = 0 means random, so not cacheable).

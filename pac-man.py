@@ -18,7 +18,7 @@ def main() -> None:
         sys.exit(1)
     else:
         try:
-            maze = MazeGenerator((10, 10))
+            maze = MazeGenerator((20, 20))
             if not maze.maze:
                 raise ValueError
         except ValueError:

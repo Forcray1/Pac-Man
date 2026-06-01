@@ -9,7 +9,7 @@ from core.game import Game
 from core.monitor import Monitor
 from core.scores import ScoreManager
 from core.sounds import get_sounds
-from display._maze_utils import _FastMazeGenerator, _maze_cache
+from display._maze_utils import _maze_cache, MazeGenerator
 from display.hud_mixin import HudMixin
 from display.renderer_mixin import RendererMixin
 from display.screens_mixin import ScreensMixin
@@ -101,10 +101,9 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         # Compute the maximum tile size that fits in WIDTH
         tile_w = int(available_w // self.cols)
 
-        # TAKE THE MINIMUM OF THE TWO
-        # Crucial step: by taking the minimum, we ensure the maze fits
-        # both the width AND the height of the screen.
-        self.TILE_SIZE = max(12, min(tile_h, tile_w, 48))
+        # Take the minimum so the maze fits both dimensions; no upper cap
+        # so that large mazes still fill the screen.
+        self.TILE_SIZE = max(4, min(tile_h, tile_w))
 
         # --- 3. FULLSCREEN WINDOW ---
         # Reuse an existing surface to avoid the window flickering when
@@ -135,11 +134,11 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         """
         self.rows = len(self.monitor.grid)
         self.cols = len(self.monitor.grid[0])
-        available_w = self.screen_max_w * 0.85
-        available_h = self.screen_max_h * 0.85
-        tile_h = int((available_h - (2 * self.margin)) // self.rows)
-        tile_w = int((available_w - (2 * self.margin)) // self.cols)
-        new_tile = max(12, min(tile_h, tile_w, 48))
+        available_w = self.screen_max_w - (2 * self.margin)
+        available_h = self.screen_max_h - (2 * self.margin)
+        tile_h = int(available_h // self.rows)
+        tile_w = int(available_w // self.cols)
+        new_tile = max(4, min(tile_h, tile_w))
         self._update_dimensions(new_tile)
 
     def _build_monitor(self) -> Monitor:
@@ -147,7 +146,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         if self._seed > 0 and cache_key in _maze_cache:
             raw_maze = _maze_cache[cache_key]
         else:
-            generator = _FastMazeGenerator(
+            generator = MazeGenerator(
                 size=(self.maze_width, self.maze_height),
                 perfect=False,
                 seed=self._seed,

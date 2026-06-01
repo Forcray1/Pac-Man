@@ -23,6 +23,7 @@ class RendererMixin:
         margin: int
         practice: bool
         scale_sprites: Callable[[], None]
+        ascii_glyph: Callable[[str], pygame.Surface]
 
     def get_wall_mask(self, grid: list[list[int]], x: int, y: int) -> int:
         """

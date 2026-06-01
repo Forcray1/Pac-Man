@@ -16,6 +16,8 @@ class SpritesMixin:
 
     if TYPE_CHECKING:
         TILE_SIZE: int
+        _ascii_cache: dict[tuple[str, int], pygame.Surface]
+        _ascii_font_size: int | None
 
     # ASCII-fallback glyphs for missing assets.
     # letter + RGB + size-fraction (relative to TILE_SIZE).
@@ -77,7 +79,7 @@ class SpritesMixin:
         )
         font = self._get_ascii_font()
         box = max(1, int(self.TILE_SIZE * frac))
-        surf = pygame.Surface(
+        surf: pygame.Surface = pygame.Surface(
             (self.TILE_SIZE, self.TILE_SIZE), pygame.SRCALPHA
         )
         if letter.strip():
@@ -243,7 +245,7 @@ class SpritesMixin:
         # Tile size may have changed; drop the ASCII glyph cache so the
         # next ascii_glyph() call re-renders at the new resolution.
         self._ascii_cache = {}
-        self._ascii_font_size = None
+        self._ascii_font_size: int | None = None
         self.sprites: dict[
             str, pygame.Surface | list[pygame.Surface | None] | None
         ] = {}
@@ -269,9 +271,9 @@ class SpritesMixin:
                 if img:
                     # Set a specific size for items
                     if key == "Pacgum":
-                        size = int(self.TILE_SIZE * 0.3)  # Small dot
+                        size = max(3, int(self.TILE_SIZE * 0.3))  # Small dot
                     elif key == "Super_Pacgum":
-                        size = int(self.TILE_SIZE * 0.6)  # Large dot
+                        size = max(5, int(self.TILE_SIZE * 0.6))  # Large dot
                     else:
                         size = self.TILE_SIZE
 

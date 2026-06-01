@@ -128,7 +128,7 @@ class Redirect:
                 f"ERROR: BaseAnimation directory not found: {_anim_dir}",
                 file=sys.stderr,
             )
-            anim_frames = []
+            anim_frames: list[pygame.Surface] = []
         else:
             _anim_files = sorted(
                 f for f in os.listdir(_anim_dir)

@@ -5,7 +5,7 @@ from entities.player import PacMan
 from entities.ghost import Ghost
 from entities.ghost_types import Blinky, Inky, Pinky, Clyde
 from entities.items import Pacgum, SuperPacgum
-from display._maze_utils import _FastMazeGenerator
+from display._maze_utils import MazeGenerator
 from core.sounds import get_sounds
 
 EMPTY = 0
@@ -181,7 +181,7 @@ class Monitor:
         maze_width = (self.cols - 1) // 2
         maze_height = (self.rows - 1) // 2
 
-        generator = _FastMazeGenerator(
+        generator = MazeGenerator(
             size=(maze_width, maze_height),
             perfect=False,
             seed=random.randint(1, 999_999),

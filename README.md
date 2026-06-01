@@ -417,13 +417,14 @@ The project was managed jointly by **mlorenzo** and **avauclai** over four weeks
 		- Adapted the make packages to adapt whatever the OS is
 		- Finalized the README
 		- Corrected some crash if file not found or not accessible
+		- Removed the _Fast_MazeGenerator as a patch on the packages as been published
+		- Changed the dimmension of the maze to test in the beggining of the programm, to avoid the warning message for the 42 size, wich is unusefull
+		- Re adapted the code for the make lint
 ```
 
 ---
 
 ## Resources
-
-### References
 
 - [Pac-Man Fandom Wiki](https://pacman.fandom.com/wiki/Pac-Man_Wiki) — original mechanics and lore
 - [How Pac-Man Ghost AI Works](https://aighost.co.uk/how-pac-man-ghost-ai-works-the-classic-chase-algorithms/) — Blinky / Pinky / Inky / Clyde target rules
