@@ -95,15 +95,18 @@ class SoundManager:
         """
         return max(0.0, min(1.0, volume * self._sfx_master))
 
-    def play(self, name: str, volume: float = 1.0) -> None:
+    def play(
+        self, name: str, volume: float = 1.0,
+    ) -> "pygame.mixer.Channel | None":
         """
-        Play the sound name once (no looping).
+        Play the sound name once (no looping). Returns the channel so the
+        caller can stop or query it; None if the sound is missing.
         """
         snd = self._load(name)
         if snd is None:
-            return
+            return None
         snd.set_volume(self._scaled(volume))
-        snd.play()
+        return snd.play()
 
     def loop_start(self, name: str, volume: float = 1.0) -> None:
         """

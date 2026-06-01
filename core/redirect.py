@@ -8,6 +8,7 @@ from core.config import edited_config
 from core.parser import parser
 from core.sounds import get_sounds
 from display.pygame_viewer import PygameViewer
+from display.helper import get_helper
 
 _MENU_MUSIC_FULL_VOL = 0.7
 _MENU_MUSIC_DUCKED_VOL = 0.25
@@ -15,6 +16,7 @@ _FAN_BASE_VOL = 0.85
 _FAN_DUCK_MULT = 0.5
 _ARCADE_SFX_MASTER = 0.5
 
+_LOBBY_HELPER = "Point and click to select"
 
 _anim_cache: dict[tuple[str, int, int], list[pygame.Surface]] = {}
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -111,6 +113,10 @@ class Redirect:
             (poly_fan,    "FAN",      self.on_fan,       None),
         ]
 
+        # Achievement helper fires once per lobby entry — no hover triggers.
+        helper = get_helper(screen)
+        helper.show(_LOBBY_HELPER)
+
         tick = 0  # frame counter — available for custom animations
 
         # Animation frames
@@ -187,8 +193,10 @@ class Redirect:
                             screen = pygame.display.get_surface() or screen
                             pygame.display.set_caption("Pac-Man")
                             pygame.event.clear()
+                            helper.show(_LOBBY_HELPER)
 
             dt = clock.get_time()   # ms since last tick
+            helper.update()
 
             # Fan slow-down / restart effect
             if self._fan_state == "slowing":
@@ -243,6 +251,8 @@ class Redirect:
                  quit_r - x_lbl.get_height() // 2),
             )
             screen.blit(quit_surf, btn_quit.topleft)
+
+            helper.draw(screen)
 
             pygame.display.flip()
             tick += 1

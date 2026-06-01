@@ -395,6 +395,10 @@ Timeline :
 		- Lighten the code to be more readable and less heavy
 		- Added the screamer of loss
 		- Started adding the sounds
+1/06/2026:
+	mlorenzo:
+		- Added a helper in a achievment minecraft style
+		- Finished the sound implementation
 ```
 
 # Edits since last commit:

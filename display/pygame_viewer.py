@@ -14,6 +14,7 @@ from display.hud_mixin import HudMixin
 from display.renderer_mixin import RendererMixin
 from display.screens_mixin import ScreensMixin
 from display.sprite_mixin import SpritesMixin
+from display.helper import get_helper
 
 
 class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
@@ -163,6 +164,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         """
         Show the main menu and run the game flow.
         """
+        get_helper(self.screen).show("Point and click or arrows")
         while True:
             action = self._run_menu()
             if action == "quit":

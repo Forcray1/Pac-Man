@@ -8,6 +8,7 @@ import pygame
 
 from core.sounds import get_sounds
 from display._maze_utils import _ROOT
+from display.helper import get_helper
 
 _TYPO_PATH = os.path.join(_ROOT, "assets", "Typo", "ByteBounce.ttf")
 
@@ -151,6 +152,9 @@ class ScreensMixin:
                     f"{prefix}{label}", font_item, color,
                     h // 2 - 80 + i * _item_gap,
                 )
+            _helper = get_helper(self.screen)
+            _helper.update()
+            _helper.draw(self.screen)
             pygame.display.flip()
             clock.tick(30)
 
@@ -295,10 +299,13 @@ class ScreensMixin:
         w, h = self.screen.get_size()
         clock = pygame.time.Clock()
 
-        # Brief black flash to make the jumpscare hit harder.
+        # Brief black flash to make the jumpscare hit harder. The sound
+        # fires with the flash (a tick before the visual hit) so the audio
+        # arrives slightly ahead of the zoom.
         self.screen.fill((0, 0, 0))
         pygame.display.flip()
         pygame.event.pump()
+        jumpscare_channel = get_sounds().play("jumpscare", volume=1.4)
         pygame.time.delay(120)
 
         duration_ms = 400
@@ -350,6 +357,10 @@ class ScreensMixin:
             pygame.display.flip()
             pygame.event.pump()
             clock.tick(60)
+
+        # Image is done — kill the sound so it doesn't bleed into game-over.
+        if jumpscare_channel is not None:
+            jumpscare_channel.stop()
 
     def _run_end_screen(self, result: str, final_score: int) -> None:
         """

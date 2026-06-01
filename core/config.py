@@ -2,6 +2,9 @@ from typing import Any
 
 import pygame
 
+from core.sounds import get_sounds
+from display.helper import get_helper
+
 
 _BG = (0, 0, 0)          # pure black
 _GREEN = (0, 255, 70)    # phosphor green
@@ -52,11 +55,13 @@ class edited_config:
         Returns the (possibly modified) config.
         """
         self._crt_power_on()
+        get_helper(self.screen).show("use arrow to select")
 
         keys = [k for k in config.keys() if k != "seed"]
         selected = 0
         blink = 0
         clock = pygame.time.Clock()
+        select_channel: pygame.mixer.Channel | None = None
 
         running = True
         while running:
@@ -66,11 +71,15 @@ class edited_config:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
-                    elif event.key == pygame.K_UP:
-                        selected = (selected - 1) % len(keys)
-                        blink = 0
-                    elif event.key == pygame.K_DOWN:
-                        selected = (selected + 1) % len(keys)
+                    elif event.key in (pygame.K_UP, pygame.K_DOWN):
+                        if (select_channel is not None
+                                and select_channel.get_busy()):
+                            select_channel.stop()
+                        select_channel = get_sounds().play(
+                            "movement_select", volume=0.20,
+                        )
+                        step = -1 if event.key == pygame.K_UP else 1
+                        selected = (selected + step) % len(keys)
                         blink = 0
                     elif event.key in (
                         pygame.K_RETURN, pygame.K_SPACE
@@ -523,6 +532,9 @@ class edited_config:
         self.screen.blit(hnt_suf, (hint_x, hint_y))
 
         self.screen.blit(self._scanlines, (0, 0))
+        _helper = get_helper(self.screen)
+        _helper.update()
+        _helper.draw(self.screen)
         pygame.display.flip()
 
     def _crt_power_on(self) -> None:
@@ -532,6 +544,7 @@ class edited_config:
         """
         w, h = self.screen.get_size()
         clock = pygame.time.Clock()
+        get_sounds().play("computer_on", volume=0.8)
 
         steps = 28
         for i in range(1, steps + 1):
@@ -571,6 +584,7 @@ class edited_config:
         w, h = self.screen.get_size()
         clock = pygame.time.Clock()
         snapshot = self.screen.copy()
+        get_sounds().play("computer_off", volume=0.8)
 
         steps = 28
         for i in range(steps, -1, -1):
