@@ -34,13 +34,13 @@ class HudMixin:
         self.screen.blit(surf, (x, y))
 
     def _draw_hud(
-        self, elapsed: int, fps: int, max_time: int, level: int = 1
+        self, elapsed_ms: int, max_time_ms: int, level: int = 1
     ) -> None:
         """Draw score, lives, level and remaining time at the top."""
         _h = self.screen.get_height()
         font = _safe_font(_TYPO_PATH, max(10, _h * 20 // 1080))
         player = self.monitor.player
-        remaining = max(0, max_time - elapsed // fps)
+        remaining = max(0, (max_time_ms - elapsed_ms) // 1000)
         text = (
             f"SCORE: {player.score}    "
             f"LIVES: {player.lives}    "

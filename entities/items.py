@@ -15,7 +15,7 @@ class Pacgum(Entity):
         self.sprite = '.'
         self.points = 10
 
-    def update(self) -> None:
+    def update(self, dt_ms: int = 0) -> None:
         """
         A standard pac-gum is static, so its update method
         does nothing in particular.
@@ -35,18 +35,20 @@ class SuperPacgum(Entity):
         super().__init__((x, y))
         self.sprite = 'O'
         self.points = 50
-        self.timer = 0  # Used to manage blinking
+        self.timer = 0  # ms accumulator used to manage blinking
 
-    def update(self) -> None:
+    # Toggle the blink roughly every 100 ms (matches the old 3-frame cadence)
+    BLINK_PERIOD_MS = 100
+
+    def update(self, dt_ms: int = 0) -> None:
         """
-        Handles the blinking of the super pac-gum at each tick
-        for a classic arcade effect.
+        Handles the blinking of the super pac-gum for a classic arcade
+        effect. *dt_ms* is the real time elapsed since the previous tick.
         """
         if not self.active:
             return
 
-        self.timer += 1
-        # Toggle display state every 3 frames
-        # (roughly every half-second with the current tick rate)
-        if self.timer % 3 == 0:
+        self.timer += dt_ms
+        if self.timer >= self.BLINK_PERIOD_MS:
+            self.timer -= self.BLINK_PERIOD_MS
             self.sprite = 'O' if self.sprite == ' ' else ' '

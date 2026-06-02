@@ -11,14 +11,14 @@ class PacMan(Entity):
                  x: int,
                  y: int,
                  lives: int = 3,
-                 power_duration: int = 50
+                 power_duration: int = 15000
                  ) -> None:
         """
         Initialize Pac-Man at *(x, y)* with the given number of *lives* and
-        the super pac-gum effect *power_duration* in frames.
+        the super pac-gum effect *power_duration* in milliseconds.
         """
         super().__init__((x, y))
-        self.sprite = 'C'  # Classic ASCII representation
+        self.sprite = 'C'  # Fallback ASCII representation
 
         self.score: int = 0
         self.lives: int = lives
@@ -31,10 +31,10 @@ class PacMan(Entity):
 
         # Management of "Super" mode (when eating a super pac-gum)
         self.is_powered_up: bool = False
-        self.power_timer: int = 0
+        self.power_timer: int = 0  # Remaining super time
         self.ghosts_eaten_in_combo: int = 0  # Points multiplier
 
-        self.eating_timer: int = 0  # Timer for slowdown while eating
+        self.eating_timer: int = 0  # ms left of the slowdown while eating
 
         # --- Variables for the Graphical view (Pygame / Blender) ---
         self.px: float = float(x)  # Fine position (Lerp) for fake 3D
@@ -51,9 +51,11 @@ class PacMan(Entity):
         """
         self.next_direction = (dx, dy)
 
-    def update(self) -> None:
+    def update(self, dt_ms: int = 0) -> None:
         """
-        Update called at each game tick.
+        Update called at each game tick. *dt_ms* is the real time elapsed
+        since the previous tick (milliseconds), so every timer counts down
+        in wall-clock time rather than in frames.
         """
         if not self.active or self.is_dying:
             return
@@ -70,7 +72,7 @@ class PacMan(Entity):
 
         # Handle end of the "Super Pac-Man" effect
         if self.is_powered_up:
-            self.power_timer -= 1
+            self.power_timer -= dt_ms
             if self.power_timer <= 0:
                 self.is_powered_up = False
                 #  self.speed_multiplier = 1.0  # Back to normal speed
@@ -79,7 +81,7 @@ class PacMan(Entity):
             # Handle slowdown while consuming pac-gums
             # (outside Super mode)
             if self.eating_timer > 0:
-                self.eating_timer -= 1
+                self.eating_timer -= dt_ms
                 # Slowdown removed as it causes stuttering/lag
                 #  self.speed_multiplier = 1.0
             else:
@@ -99,13 +101,12 @@ class PacMan(Entity):
 
     def trigger_power_up(self, duration: int = 0) -> None:
         """
-        Activate Super mode. If duration is not specified,
-        uses the default configured duration.
+        Activate Super mode for *duration* milliseconds. If no positive
+        duration is given, falls back to the default configured duration.
         """
         self.is_powered_up = True
         self.power_timer = (
-            duration if duration is not None
-            else self.default_power_duration
+            duration if duration else self.default_power_duration
         )
         self.ghosts_eaten_in_combo = 0  # Reset the combo
 

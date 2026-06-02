@@ -71,12 +71,17 @@ class Ghost(Entity, ABC):
 
     def reset(self) -> None:
         """
-        Reset the ghost to its original state.
+        Reset the ghost to its original state, centred on its spawn tile
+        with no leftover interpolation so it never drifts off the tile on
+        the next READY! screen.
         """
         self.set_position(*self.spawn)
         self.eatable = False
         self.is_dead = False
         self.active = True
+        self.direction = "S"
+        self.move_accumulator = 0.0
+        self.current_path = []
 
     @staticmethod
     def _heuristic(a: tuple[int, int], b: tuple[int, int]) -> float:

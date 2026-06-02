@@ -157,7 +157,7 @@ class Monitor:
             Clyde(ghost_points[3], sprite="&"),
         ]
 
-        super_duration = int(config.get("super_time", 8)) * 30
+        super_duration = int(config.get("super_time", 8)) * 1000
         player = PacMan(
             player_pos[0], player_pos[1], power_duration=super_duration)
         monitor = cls(int_grid, player, ghosts=ghosts, config=config)
@@ -288,15 +288,17 @@ class Monitor:
                 break
             ghost.move_accumulator -= 1.0
 
-    def update(self) -> None:
+    def update(self, dt_ms: int = 0) -> None:
         """
-        Tick every entity managed by the monitor.
+        Tick every entity managed by the monitor. *dt_ms* is the real time
+        elapsed since the previous tick (milliseconds); it is forwarded to
+        every entity so timers count down in wall-clock time, not in frames.
         """
         self.player.prev_pos = self.player.pos
         for ghost in self.active_ghosts:
             ghost.prev_pos = ghost.pos
 
-        self.player.update()
+        self.player.update(dt_ms)
         for ghost in self.ghosts:
             ghost.update()
 
@@ -339,9 +341,44 @@ class Monitor:
                 self._advance_ghost(ghost)
 
         for item in self.all_items:
-            item.update()
+            item.update(dt_ms)
 
         self._check_collisions()
+
+    def request_player_direction(self, dx: int, dy: int) -> None:
+        """
+        Register the player's requested direction.
+
+        A perpendicular turn is buffered and taken at the next tile where
+        the way opens up (see :meth:`_move_player`). A reversal of the
+        current heading, however, is applied *immediately* so Pac-Man turns
+        back from the tile he visually occupies right now instead of
+        overshooting to the tile ahead first. The move accumulator is
+        inverted on reversal so the on-screen sprite never jumps.
+        """
+        p = self.player
+        p.next_direction = (dx, dy)
+
+        cur_dx, cur_dy = p.direction
+        is_reversal = (
+            (cur_dx, cur_dy) != (0, 0)
+            and (dx, dy) == (-cur_dx, -cur_dy)
+        )
+        if not is_reversal:
+            return
+
+        ahead_x, ahead_y = p.x + cur_dx, p.y + cur_dy
+        if (
+            0 <= ahead_y < self.rows
+            and 0 <= ahead_x < self.cols
+            and self.grid[ahead_y][ahead_x] != WALL
+        ):
+            # We were partway into the tile ahead: commit to it and invert
+            # the progress so the sprite keeps its exact screen position.
+            p.set_position(ahead_x, ahead_y)
+            p.move_accumulator = max(0.0, 1.0 - p.move_accumulator)
+        p.direction = (dx, dy)
+        p.next_direction = (0, 0)
 
     def _move_player(self) -> None:
         """
@@ -361,14 +398,16 @@ class Monitor:
             # If the player was idle, let them start instantly
             pass
 
-        # 2. Cornering: adopt next_direction if the way is clear
-        # from this new tile
+        # 2. Cornering: adopt next_direction if the way is clear from the
+        # tile we now stand on, then consume the buffered input so a stale
+        # turn cannot fire again at a later intersection.
         nx_dx, nx_dy = self.player.next_direction
         if nx_dx != 0 or nx_dy != 0:
             test_x = self.player.x + nx_dx
             test_y = self.player.y + nx_dy
             if self.grid[test_y][test_x] != WALL:
                 self.player.direction = self.player.next_direction
+                self.player.next_direction = (0, 0)
 
     def _check_collisions(self) -> None:
         """
@@ -395,10 +434,9 @@ class Monitor:
                     f"eat_dot_{self._dot_toggle}", volume=0.8,
                 )
                 self._dot_toggle ^= 1
-                fps_jeu = 30
                 config_secondes = self.config.get("super_time", 8)
-                duration = int(config_secondes * fps_jeu)
-                self.player.trigger_power_up(duration)
+                duration_ms = int(config_secondes * 1000)
+                self.player.trigger_power_up(duration_ms)
                 for ghost in self.active_ghosts:
                     ghost.eatable = True
                     dist = abs(ghost.x - px) + abs(ghost.y - py)

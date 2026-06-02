@@ -423,15 +423,11 @@ The project was managed jointly by **mlorenzo** and **avauclai** over four weeks
 02/06/2026:
 	mlorenzo:
 		- Reduce input lag
-		- cleaned the game to remove unusefull code
+		- Cleaned the game to remove unusefull code
+		- Went from frame counting to timestamp
+		- Corrected the small visual bug of the ghosts at the start of the game
 
 ```
-
-TODO:
-
-passer de compter en frame a un timestamp
-regler l'input lag
-
 
 ---
 

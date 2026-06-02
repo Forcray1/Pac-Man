@@ -36,6 +36,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         screen_max_h = self.screen_max_h
         self.reset = False
         self._skip_next_ready = False  # prevents double READY! after death
+        self._first_frame = False  # set by Game at the start of each level
 
         # Define a safety margin to avoid touching the screen edges
         # (e.g. taskbar)
@@ -222,10 +223,12 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         return Game(self.monitor, self.config, self, level).run()
 
     def render_frame(
-        self, elapsed: int, fps: int, max_time: int, level: int
-    ) -> None:
+        self, elapsed_ms: int, max_time_ms: int, level: int
+    ) -> int:
         """
-        Draw one frame to the screen.
+        Draw one frame to the screen. Returns the number of milliseconds
+        spent blocking on the READY! overlay (0 on a normal frame), so the
+        caller can keep its game clock from counting that pause.
         """
         self.screen.fill((0, 0, 0))
         self.draw_maze()
@@ -234,18 +237,23 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
             self.draw_ghost_paths()
         self.draw_ghosts()
         self.draw_player()
-        self._draw_hud(elapsed, fps, max_time, level)
+        self._draw_hud(elapsed_ms, max_time_ms, level)
         pygame.display.flip()
         # Determine whether to show the READY! overlay.
-        # After a death-reset, self.reset fires at elapsed=0
+        # After a death-reset self.reset is set; the first frame of a fresh
+        # level is flagged by Game via self._first_frame.
         _trigger_ready = self.reset
-        if elapsed == 1:
+        if self._first_frame:
+            self._first_frame = False
             if self._skip_next_ready:
                 self._skip_next_ready = False   # consume the suppression
             else:
                 _trigger_ready = True
         if self.reset:
-            self._skip_next_ready = True  # suppress the upcoming elapsed==1
+            self._skip_next_ready = True  # suppress the upcoming first frame
+        if not _trigger_ready:
+            return 0
+        _overlay_start = pygame.time.get_ticks()
         if _trigger_ready:
             get_sounds().stop_all_loops()
             get_sounds().play("start", volume=0.7)
@@ -339,7 +347,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
                     self.draw_ghost_paths()
                 self.draw_ghosts()
                 self.draw_player()
-                self._draw_hud(elapsed, fps, max_time, level)
+                self._draw_hud(elapsed_ms, max_time_ms, level)
                 if _ready_surf is not None:
                     _w, _h = self.screen.get_size()
                     self.screen.blit(_ready_surf, _ready_surf.get_rect(
@@ -352,3 +360,4 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
             pygame.event.pump()
             pygame.event.clear()
         self.reset = False
+        return pygame.time.get_ticks() - _overlay_start

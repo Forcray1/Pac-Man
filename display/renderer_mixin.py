@@ -407,10 +407,17 @@ class RendererMixin:
                 continue
 
             # --- POSITION COMPUTATION (Interpolation) ---
+            # Only interpolate toward the next tile when that tile is
+            # walkable, so a ghost never visually drifts into a wall (e.g.
+            # along its default heading at spawn) and then snaps back.
             dx, dy = dir_map_vectors.get(ghost.direction, (0, 0))
             render_x, render_y = float(ghost.x), float(ghost.y)
-            render_x += dx * ghost.move_accumulator
-            render_y += dy * ghost.move_accumulator
+            grid = self.monitor.grid
+            if (0 <= ghost.y + dy < self.rows and
+                    0 <= ghost.x + dx < self.cols and
+                    grid[ghost.y + dy][ghost.x + dx] != 1):
+                render_x += dx * ghost.move_accumulator
+                render_y += dy * ghost.move_accumulator
 
             # --- FRAME SELECTION ---
             ghost_dir = dir_map_str.get(ghost.direction, "Down")
@@ -419,10 +426,10 @@ class RendererMixin:
                 frames = self.sprites.get(f"Dead_{ghost_dir}")
 
             elif ghost.eatable:
-                # Blink threshold: 3 seconds * 30 FPS = 90
-                if player.power_timer < 90:
-                    # Alternate between blue and white every 5 frames
-                    if (player.power_timer // 5) % 2 == 0:
+                # Start blinking over the last 3 seconds of super mode.
+                if player.power_timer < 3000:
+                    # Alternate between blue and white every ~150 ms.
+                    if (player.power_timer // 150) % 2 == 0:
                         frames = self.sprites.get("Frighten_End")
                     else:
                         frames = self.sprites.get("Frighten")
@@ -451,8 +458,8 @@ class RendererMixin:
                 if ghost.is_dead:
                     sprite = self.ascii_glyph("Dead")
                 elif ghost.eatable:
-                    if (player.power_timer < 90 and
-                            (player.power_timer // 5) % 2 == 0):
+                    if (player.power_timer < 3000 and
+                            (player.power_timer // 150) % 2 == 0):
                         sprite = self.ascii_glyph("Frighten_End")
                     else:
                         sprite = self.ascii_glyph("Frighten")

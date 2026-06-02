@@ -64,12 +64,18 @@ class ScreensMixin:
         actions = ["play", "highscores", "instructions", "quit"]
         selected = 0
         clock = pygame.time.Clock()
+        # Track the cursor so hover only changes the selection when the mouse
+        # actually moves. Otherwise a cursor parked on a hitbox would override
+        # keyboard navigation every frame (pressing Down would snap back).
+        last_mouse = pygame.mouse.get_pos()
 
         anim_x = -250
 
         while True:
             w, h = self.screen.get_size()
             mouse = pygame.mouse.get_pos()
+            mouse_moved = mouse != last_mouse
+            last_mouse = mouse
 
             # Pre-compute clickable rects for menu items (stable hitboxes).
             item_rects: list[pygame.Rect] = []
@@ -79,11 +85,13 @@ class ScreensMixin:
                 r = lbl_surf.get_rect(centerx=w // 2, y=y_i)
                 item_rects.append(r.inflate(180, 24))
 
-            # Mouse-hover selects the item under the cursor.
-            for i, r in enumerate(item_rects):
-                if r.collidepoint(mouse):
-                    selected = i
-                    break
+            # Mouse-hover selects the item under the cursor, but only on real
+            # cursor movement so it never fights keyboard navigation.
+            if mouse_moved:
+                for i, r in enumerate(item_rects):
+                    if r.collidepoint(mouse):
+                        selected = i
+                        break
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -473,6 +481,9 @@ class ScreensMixin:
         selected = 0
         clock = pygame.time.Clock()
         blink_timer = 0
+        # Hover only changes the selection on real cursor movement, so a
+        # parked mouse never overrides keyboard navigation.
+        last_mouse = pygame.mouse.get_pos()
 
         # Capture the current game frame to use as background
         background = self.screen.copy()
@@ -481,6 +492,8 @@ class ScreensMixin:
             w, h = self.screen.get_size()
             cy = h // 2
             mouse = pygame.mouse.get_pos()
+            mouse_moved = mouse != last_mouse
+            last_mouse = mouse
 
             # Build clickable rects for each pause-menu item.
             item_rects: list[pygame.Rect] = []
@@ -490,12 +503,13 @@ class ScreensMixin:
                 r = lbl_surf.get_rect(centerx=w // 2, y=y_i)
                 item_rects.append(r.inflate(180, 24))
 
-            for i, r in enumerate(item_rects):
-                if r.collidepoint(mouse):
-                    if selected != i:
-                        blink_timer = 0
-                    selected = i
-                    break
+            if mouse_moved:
+                for i, r in enumerate(item_rects):
+                    if r.collidepoint(mouse):
+                        if selected != i:
+                            blink_timer = 0
+                        selected = i
+                        break
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -574,6 +588,9 @@ class ScreensMixin:
         selected = 0
         clock = pygame.time.Clock()
         blink_timer = 0
+        # Hover only changes the selection on real cursor movement, so a
+        # parked mouse never overrides keyboard navigation.
+        last_mouse = pygame.mouse.get_pos()
 
         background = self.screen.copy()
 
@@ -598,6 +615,8 @@ class ScreensMixin:
             w, h = self.screen.get_size()
             cy = h // 2
             mouse = pygame.mouse.get_pos()
+            mouse_moved = mouse != last_mouse
+            last_mouse = mouse
 
             collision_tag = "[OFF]" if self.monitor.collision else "[ON]"
             ghosts_tag = "[ON]" if self.monitor.ghosts_frozen else "[OFF]"
@@ -617,12 +636,13 @@ class ScreensMixin:
                 r = lbl_surf.get_rect(centerx=w // 2, y=y_i)
                 item_rects.append(r.inflate(220, 24))
 
-            for i, r in enumerate(item_rects):
-                if r.collidepoint(mouse):
-                    if selected != i:
-                        blink_timer = 0
-                    selected = i
-                    break
+            if mouse_moved:
+                for i, r in enumerate(item_rects):
+                    if r.collidepoint(mouse):
+                        if selected != i:
+                            blink_timer = 0
+                        selected = i
+                        break
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
