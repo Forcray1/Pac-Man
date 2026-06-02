@@ -267,7 +267,7 @@ The project was managed jointly by **mlorenzo** and **avauclai** over four weeks
 | 12–14/05 | Sprite system, animations, level progression, cheat mode, 3D Blender renders | 
 | 15–21/05 | Pause menu, fullscreen mode, in-game config editor, flake8/mypy compliance | 
 | 22–27/05 | Lobby hub, point-and-click controls, jumpscare, packaging spec, parser polish | 
-| 28/05–01/06 | Helper popups, full sound design, README + project-management docs, packaging | 
+| 28/05–02/06 | Helper popups, full sound design, README + project-management docs, packaging | 
 
 ### Timeline
 
@@ -420,7 +420,18 @@ The project was managed jointly by **mlorenzo** and **avauclai** over four weeks
 		- Removed the _Fast_MazeGenerator as a patch on the packages as been published
 		- Changed the dimmension of the maze to test in the beggining of the programm, to avoid the warning message for the 42 size, wich is unusefull
 		- Re adapted the code for the make lint
+02/06/2026:
+	mlorenzo:
+		- Reduce input lag
+		- cleaned the game to remove unusefull code
+
 ```
+
+TODO:
+
+passer de compter en frame a un timestamp
+regler l'input lag
+
 
 ---
 
@@ -434,7 +445,7 @@ The project was managed jointly by **mlorenzo** and **avauclai** over four weeks
 
 ### AI usage
 
-AI tooling (Claude Code) was used selectively, as a productivity multiplier on tasks where the team already knew the desired outcome:
+AI tooling was used selectively, as a productivity multiplier on tasks where the team already knew the desired outcome:
 
 - **Repetitive code generation:** type hints, docstrings, mixin boilerplate, scaffolding for the polygon hit-test math in the lobby.
 - **README scaffolding:** initial structure of this file and tables, then audited section-by-section against the actual code.

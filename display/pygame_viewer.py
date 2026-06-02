@@ -249,7 +249,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         if _trigger_ready:
             get_sounds().stop_all_loops()
             get_sounds().play("start", volume=0.7)
-            _ready_duration_ms = int(get_sounds().get_length("start") * 1000)
+            _ready_duration_ms = 1000
             if _ready_duration_ms <= 0:
                 _ready_duration_ms = 2000
             pygame.event.set_blocked(None)

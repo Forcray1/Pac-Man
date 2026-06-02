@@ -56,12 +56,23 @@ class Game:
                         if self.viewer._run_pause_menu() == "quit":
                             get_sounds().stop_all_loops()
                             return "quit"
-                    cheat_enabled = self.config.get("cheat_mode", False)
+                    cheat_enabled = self.config.get("cheat_mode")
                     if cheat_enabled and event.key == pygame.K_c:
                         get_sounds().stop_all_loops()
                         if self.viewer._run_cheat_menu() == "next_level":
                             get_sounds().stop_all_loops()
                             return "win"
+                    # Capture direction from KEYDOWN events so that brief
+                    # taps (shorter than one frame) are never dropped.
+                    if not self.monitor.player.is_dying:
+                        if event.key in (pygame.K_UP, pygame.K_w):
+                            self.monitor.player.set_direction(0, -1)
+                        elif event.key in (pygame.K_DOWN, pygame.K_s):
+                            self.monitor.player.set_direction(0, 1)
+                        elif event.key in (pygame.K_LEFT, pygame.K_a):
+                            self.monitor.player.set_direction(-1, 0)
+                        elif event.key in (pygame.K_RIGHT, pygame.K_d):
+                            self.monitor.player.set_direction(1, 0)
 
             if not self.monitor.player.is_dying:
                 keys = pygame.key.get_pressed()

@@ -109,7 +109,7 @@ class ScreensMixin:
             else:
                 self.screen.fill((0, 0, 0))
 
-            # --- Animation at the bottom ---
+            # Animation at the bottom
             anim_x += 5
             if anim_x > w + 100:
                 anim_x = -450
@@ -132,9 +132,7 @@ class ScreensMixin:
                     if ghost_sprite:
                         ghost_x = anim_x + 100 + 60 * i
                         self.screen.blit(ghost_sprite, (ghost_x, anim_y))
-            # -------------------------------
 
-            # --- Logo ---
             if _logo_raw is not None:
                 _lw = int(w * LOGO_WIDTH_RATIO)
                 _lh = int(_logo_raw.get_height() * _lw / _logo_raw.get_width())
@@ -143,7 +141,6 @@ class ScreensMixin:
                     centerx=int(w * LOGO_CENTER_X_RATIO),
                     centery=LOGO_CENTER_Y,
                 )))
-            # ---------------
 
             for i, label in enumerate(items):
                 color = (255, 255, 0) if i == selected else (200, 200, 200)
