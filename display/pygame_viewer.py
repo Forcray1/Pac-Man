@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import sys
 from typing import Any
-import os
+
 import pygame
 
 from core.game import Game
@@ -12,12 +11,19 @@ from core.sounds import get_sounds
 from display._maze_utils import _maze_cache, MazeGenerator
 from display.hud_mixin import HudMixin
 from display.renderer_mixin import RendererMixin
-from display.screens_mixin import ScreensMixin
+from display.menu_screens_mixin import MenuScreensMixin
+from display.overlay_screens_mixin import OverlayScreensMixin
 from display.sprite_mixin import SpritesMixin
 from display.helper import get_helper
 
 
-class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
+class PygameViewer(
+    SpritesMixin,
+    RendererMixin,
+    HudMixin,
+    MenuScreensMixin,
+    OverlayScreensMixin,
+):
     def __init__(self, config: dict[str, Any]):
         """
         Build the Pygame window, load assets, and instantiate the monitor
@@ -250,110 +256,45 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
             self._skip_next_ready = True
         if not _trigger_ready:
             return 0
-        _overlay_start = pygame.time.get_ticks()
-        if _trigger_ready:
-            get_sounds().stop_all_loops()
-            get_sounds().play("start", volume=0.7)
-            _ready_duration_ms = 1000
-            if _ready_duration_ms <= 0:
-                _ready_duration_ms = 2000
-            pygame.event.set_blocked(None)
+        return self._show_ready_overlay(elapsed_ms, max_time_ms, level)
 
-            # Tile constants for texts.png (128×224, 8×8 grid, 16 cols)
-            _TW, _TH = 8, 8
-            # Row offset per colour
-            _COLOR_ROW = 24
-            _CMAP: dict[str, tuple[int, int]] = {
-                'A': (0, 0), 'B': (1, 0), 'C': (2, 0), 'D': (3, 0),
-                'E': (4, 0), 'F': (5, 0), 'G': (6, 0), 'H': (7, 0),
-                'I': (8, 0), 'J': (9, 0), 'K': (10, 0), 'L': (11, 0),
-                'M': (12, 0), 'N': (13, 0), 'O': (14, 0),
-                'P': (0, 1), 'Q': (1, 1), 'R': (2, 1), 'S': (3, 1),
-                'T': (4, 1), 'U': (5, 1), 'V': (6, 1), 'W': (7, 1),
-                'X': (8, 1), 'Y': (9, 1), 'Z': (10, 1), '!': (11, 1),
-                '0': (0, 2), '1': (1, 2), '2': (2, 2), '3': (3, 2),
-                '4': (4, 2), '5': (5, 2), '6': (6, 2), '7': (7, 2),
-                '8': (8, 2), '9': (9, 2),
-            }
-            _texts = self.sprites.get("texts")
-            _ready_surf = None
-            if isinstance(_texts, pygame.Surface):
-                _scale = max(1, self.TILE_SIZE // _TH)
-                _dw, _dh = _TW * _scale, _TH * _scale
-                _label = "READY!"
-                _ready_surf = pygame.Surface(
-                    (len(_label) * _dw, _dh), pygame.SRCALPHA
-                )
-                _missing: list[str] = []
-                for _i, _ch in enumerate(_label):
-                    if _ch not in _CMAP:
-                        _missing.append(_ch)
-                        continue
-                    _col, _row = _CMAP[_ch]
-                    _sx = _col * _TW
-                    _sy = (_row + _COLOR_ROW) * _TH
-                    if (
-                        _sx + _TW > _texts.get_width()
-                        or _sy + _TH > _texts.get_height()
-                    ):
-                        print(
-                            f"[WARNING] Tile '{_ch}' out of bound "
-                            f"({_sx},{_sy}) in texts.png "
-                            f"{_texts.get_size()} — caracter ignored.",
-                            file=sys.stderr
-                        )
-                        continue
-                    _tile = _texts.subsurface(
-                        pygame.Rect(_sx, _sy, _TW, _TH)
-                    )
-                    _ready_surf.blit(
-                        pygame.transform.scale(_tile, (_dw, _dh)),
-                        (_i * _dw, 0),
-                    )
-                if _missing:
-                    print(
-                        f"[WARNING] Missing caracters from CMAP : "
-                        f"{_missing}",
-                        file=sys.stderr
-                    )
-            else:
-                # Fallback : text with ByteBounce typo
-                from display._maze_utils import _ROOT as _R
-                _fb_path = os.path.join(_R, "assets", "Typo", "ByteBounce.ttf")
-                _fb_size = max(12, self.TILE_SIZE * 2)
-                try:
-                    _fb_font = pygame.font.Font(_fb_path, _fb_size)
-                except Exception:
-                    _fb_font = pygame.font.SysFont(None, _fb_size)
-                _ready_surf = _fb_font.render(
-                    "READY!", True, (255, 255, 0)
-                )
-                print(
-                    "[READY!] ℹ texts.png not accessible — "
-                    "fallback to ByteBounce."
-                )
+    def _show_ready_overlay(
+        self, elapsed_ms: int, max_time_ms: int, level: int
+    ) -> int:
+        """
+        Play the start jingle and hold the frozen scene under a centred
+        "READY!" banner for 1s. Returns the milliseconds spent blocking so
+        the caller can exclude them from the game clock.
+        """
+        overlay_start = pygame.time.get_ticks()
+        get_sounds().stop_all_loops()
+        get_sounds().play("start", volume=0.7)
+        pygame.event.set_blocked(None)
 
-            _clock = pygame.time.Clock()
-            _start = pygame.time.get_ticks()
-            while pygame.time.get_ticks() - _start < _ready_duration_ms:
-                self.screen.fill((0, 0, 0))
-                self.draw_maze()
-                self.draw_items()
-                if self.practice:
-                    self.draw_ghost_paths()
-                self.draw_ghosts()
-                self.draw_player()
-                self._draw_hud(elapsed_ms, max_time_ms, level)
-                if _ready_surf is not None:
-                    _w, _h = self.screen.get_size()
-                    self.screen.blit(_ready_surf, _ready_surf.get_rect(
-                        center=(_w // 2, _h // 2 + self.TILE_SIZE)
-                    ))
-                pygame.display.flip()
-                _clock.tick(30)
+        ready_surf = self.render_text("READY!")
 
-            pygame.event.set_allowed(None)
-            pygame.event.pump()
-            pygame.event.clear()
+        duration_ms = 1000
+        clock = pygame.time.Clock()
+        start = pygame.time.get_ticks()
+        while pygame.time.get_ticks() - start < duration_ms:
+            self.screen.fill((0, 0, 0))
+            self.draw_maze()
+            self.draw_items()
+            if self.practice:
+                self.draw_ghost_paths()
+            self.draw_ghosts()
+            self.draw_player()
+            self._draw_hud(elapsed_ms, max_time_ms, level)
+            if ready_surf is not None:
+                w, h = self.screen.get_size()
+                self.screen.blit(ready_surf, ready_surf.get_rect(
+                    center=(w // 2, h // 2 + self.TILE_SIZE)
+                ))
+            pygame.display.flip()
+            clock.tick(30)
+
+        pygame.event.set_allowed(None)
+        pygame.event.pump()
+        pygame.event.clear()
         self.reset = False
-        return pygame.time.get_ticks() - _overlay_start
+        return pygame.time.get_ticks() - overlay_start

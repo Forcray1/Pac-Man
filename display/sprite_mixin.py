@@ -8,6 +8,23 @@ import pygame
 
 from display._maze_utils import _ROOT
 
+# Layout of texts.png: a 128×224 sheet of 8×8 glyphs, 16 columns. Colour
+# variants are stacked in blocks of rows; row 24 is the yellow block.
+# _TEXT_CMAP maps a character to its (col, row) within one colour block.
+_TEXT_TILE = 8
+_TEXT_CMAP: dict[str, tuple[int, int]] = {
+    'A': (0, 0), 'B': (1, 0), 'C': (2, 0), 'D': (3, 0),
+    'E': (4, 0), 'F': (5, 0), 'G': (6, 0), 'H': (7, 0),
+    'I': (8, 0), 'J': (9, 0), 'K': (10, 0), 'L': (11, 0),
+    'M': (12, 0), 'N': (13, 0), 'O': (14, 0),
+    'P': (0, 1), 'Q': (1, 1), 'R': (2, 1), 'S': (3, 1),
+    'T': (4, 1), 'U': (5, 1), 'V': (6, 1), 'W': (7, 1),
+    'X': (8, 1), 'Y': (9, 1), 'Z': (10, 1), '!': (11, 1),
+    '0': (0, 2), '1': (1, 2), '2': (2, 2), '3': (3, 2),
+    '4': (4, 2), '5': (5, 2), '6': (6, 2), '7': (7, 2),
+    '8': (8, 2), '9': (9, 2),
+}
+
 
 class SpritesMixin:
     """
@@ -42,8 +59,8 @@ class SpritesMixin:
 
     def _get_ascii_font(self) -> pygame.font.Font:
         """
-		Return the font used for ASCII fallbacks.
-		"""
+        Return the font used for ASCII fallbacks.
+        """
         if not pygame.font.get_init():
             pygame.font.init()
         cached_size = getattr(self, "_ascii_font_size", None)
@@ -101,6 +118,54 @@ class SpritesMixin:
             surf.blit(text, rect)
         self._ascii_cache[cache_key] = surf
         return surf
+
+    def render_text(
+        self, label: str, color_row: int = 24
+    ) -> pygame.Surface | None:
+        """
+        Render label from the texts.png sprite sheet, scaled to the tile
+        size, using the colour block starting at color_row (24 = yellow).
+        Falls back to the ByteBounce font when the sheet is unavailable, and
+        returns None only if even the fallback cannot be built.
+        """
+        texts = self.sprites.get("texts")
+        if isinstance(texts, pygame.Surface):
+            scale = max(1, self.TILE_SIZE // _TEXT_TILE)
+            dw, dh = _TEXT_TILE * scale, _TEXT_TILE * scale
+            surf = pygame.Surface((len(label) * dw, dh), pygame.SRCALPHA)
+            missing: list[str] = []
+            for i, ch in enumerate(label):
+                if ch not in _TEXT_CMAP:
+                    missing.append(ch)
+                    continue
+                col, row = _TEXT_CMAP[ch]
+                sx = col * _TEXT_TILE
+                sy = (row + color_row) * _TEXT_TILE
+                if (sx + _TEXT_TILE > texts.get_width()
+                        or sy + _TEXT_TILE > texts.get_height()):
+                    print(
+                        f"[WARNING] Tile '{ch}' out of bound ({sx},{sy}) in"
+                        f" texts.png {texts.get_size()} — caracter ignored.",
+                        file=sys.stderr,
+                    )
+                    continue
+                tile = texts.subsurface(
+                    pygame.Rect(sx, sy, _TEXT_TILE, _TEXT_TILE))
+                surf.blit(pygame.transform.scale(tile, (dw, dh)), (i * dw, 0))
+            if missing:
+                print(f"[WARNING] Missing caracters from CMAP : {missing}",
+                      file=sys.stderr)
+            return surf
+
+        # Fallback: render with the ByteBounce font.
+        fb_path = os.path.join(_ROOT, "assets", "Typo", "ByteBounce.ttf")
+        fb_size = max(12, self.TILE_SIZE * 2)
+        try:
+            fb_font = pygame.font.Font(fb_path, fb_size)
+        except Exception:
+            fb_font = pygame.font.SysFont(None, fb_size)
+        print("[text] ℹ texts.png not accessible — fallback to ByteBounce.")
+        return fb_font.render(label, True, (255, 255, 0))
 
     def _load_raw(self, rel_path: str) -> pygame.Surface | None:
         path = os.path.join(_ROOT, "assets", rel_path)
@@ -244,8 +309,8 @@ class SpritesMixin:
 
     def scale_sprites(self) -> None:
         """
-		Rescale every raw sprite to the current tile size for rendering.
-		"""
+        Rescale every raw sprite to the current tile size for rendering.
+        """
         self._ascii_cache = {}
         self._ascii_font_size: int | None = None
         self.sprites: dict[

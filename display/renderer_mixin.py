@@ -238,8 +238,8 @@ class RendererMixin:
 
     def draw_items(self) -> None:
         """
-		Draw the active pac-gums and super pac-gums.
-		"""
+        Draw the active pac-gums and super pac-gums.
+        """
         all_gums = self.monitor.pacgums + self.monitor.super_pacgums
 
         for gum in all_gums:
@@ -406,7 +406,7 @@ class RendererMixin:
 
             # Only interpolate toward the next tile when that tile is
             # walkable, so a ghost never visually drifts into a wall
-			# and then snaps back.
+            # and then snaps back.
             dx, dy = dir_map_vectors.get(ghost.direction, (0, 0))
             render_x, render_y = float(ghost.x), float(ghost.y)
             grid = self.monitor.grid

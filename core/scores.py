@@ -60,8 +60,8 @@ class ScoreManager:
 
     def check_name(self, username: str) -> bool:
         """
-		Return True if username is at most 10 alphanumeric/space chars.
-		"""
+        Return True if username is at most 10 alphanumeric/space chars.
+        """
         if len(username) > 10:
             return False
         for i in username:

@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 class HudMixin:
     """
-	Handles on-screen text helpers and the in-game HUD.
-	"""
+    Handles on-screen text helpers and the in-game HUD.
+    """
 
     if TYPE_CHECKING:
         screen: pygame.Surface
@@ -31,8 +31,8 @@ class HudMixin:
         y: int,
     ) -> None:
         """
-		Draw text horizontally centred at vertical position y.
-		"""
+        Draw text horizontally centred at vertical position y.
+        """
         surf = font.render(text, True, color)
         x = (self.screen.get_width() - surf.get_width()) // 2
         self.screen.blit(surf, (x, y))
@@ -41,8 +41,8 @@ class HudMixin:
         self, elapsed_ms: int, max_time_ms: int, level: int = 1
     ) -> None:
         """
-		Draw score, lives, level and remaining time at the top.
-		"""
+        Draw score, lives, level and remaining time at the top.
+        """
         _h = self.screen.get_height()
         font = _safe_font(_TYPO_PATH, max(10, _h * 20 // 1080))
         player = self.monitor.player
