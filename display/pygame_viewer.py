@@ -21,15 +21,15 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
     def __init__(self, config: dict[str, Any]):
         """
         Build the Pygame window, load assets, and instantiate the monitor
-        for the first level from *config*.
+        for the first level from config.
         """
         pygame.mixer.pre_init(44100, -16, 2, 512)
         pygame.init()
         get_sounds().preload_all()
 
-        # --- 1. SCREEN BOUNDS DETECTION ---
+        # SCREEN BOUNDS DETECTION
         info = pygame.display.Info()
-        # Get the current monitor resolution (e.g. 1920x1080)
+        # Get the current monitor resolution
         self.screen_max_w = info.current_w
         self.screen_max_h = info.current_h
         screen_max_w = self.screen_max_w
@@ -38,8 +38,6 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         self._skip_next_ready = False  # prevents double READY! after death
         self._first_frame = False  # set by Game at the start of each level
 
-        # Define a safety margin to avoid touching the screen edges
-        # (e.g. taskbar)
         self.margin = 60
 
         if config:
@@ -92,7 +90,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         self.rows = len(self.monitor.grid)
         self.cols = len(self.monitor.grid[0])
 
-        # --- 2. AUTO-COMPUTE TILE SIZE ---
+        # AUTO-COMPUTE TILE SIZE
         # Tile size is computed so the maze fits inside the full screen,
         # leaving a margin on each side.
         available_w = screen_max_w - (2 * self.margin)
@@ -106,9 +104,7 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         # so that large mazes still fill the screen.
         self.TILE_SIZE = max(4, min(tile_h, tile_w))
 
-        # --- 3. FULLSCREEN WINDOW ---
-        # Reuse an existing surface to avoid the window flickering when
-        # transitioning from the main menu.
+        # FULLSCREEN WINDOW
         _existing = pygame.display.get_surface()
         if _existing is not None:
             self.screen = _existing
@@ -116,12 +112,10 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
             self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         pygame.display.set_caption("Pac-Man - Pygame Viewer")
 
-        # Store the actual fullscreen dimensions for later reuse.
+        # Use the actual fullscreen surface size to centre the maze.
         actual_w, actual_h = self.screen.get_size()
-        self.screen_width = actual_w
-        self.screen_height = actual_h
 
-        # --- 4. DYNAMIC CENTERING ---
+        # DYNAMIC CENTERING
         self.offset_x = (actual_w - (self.cols * self.TILE_SIZE)) // 2
         self.offset_y = (actual_h - (self.rows * self.TILE_SIZE)) // 2
 
@@ -143,6 +137,9 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         self._update_dimensions(new_tile)
 
     def _build_monitor(self) -> Monitor:
+        """
+        Build the Monitor for the current maze size and seed.
+        """
         cache_key = (self.maze_width, self.maze_height, self._seed)
         if self._seed > 0 and cache_key in _maze_cache:
             raw_maze = _maze_cache[cache_key]
@@ -227,8 +224,8 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
     ) -> int:
         """
         Draw one frame to the screen. Returns the number of milliseconds
-        spent blocking on the READY! overlay (0 on a normal frame), so the
-        caller can keep its game clock from counting that pause.
+        spent blocking on the READY! overlay, so the caller can keep its
+        game clock from counting that pause.
         """
         self.screen.fill((0, 0, 0))
         self.draw_maze()
@@ -246,11 +243,11 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
         if self._first_frame:
             self._first_frame = False
             if self._skip_next_ready:
-                self._skip_next_ready = False   # consume the suppression
+                self._skip_next_ready = False
             else:
                 _trigger_ready = True
         if self.reset:
-            self._skip_next_ready = True  # suppress the upcoming first frame
+            self._skip_next_ready = True
         if not _trigger_ready:
             return 0
         _overlay_start = pygame.time.get_ticks()
@@ -264,9 +261,8 @@ class PygameViewer(SpritesMixin, RendererMixin, HudMixin, ScreensMixin):
 
             # Tile constants for texts.png (128×224, 8×8 grid, 16 cols)
             _TW, _TH = 8, 8
-            # Row offset per colour: 0=white, 4=red, 12=blue, …
-            _COLOR_ROW = 24  # yellow
-            # (col, row) inside one colour block
+            # Row offset per colour
+            _COLOR_ROW = 24
             _CMAP: dict[str, tuple[int, int]] = {
                 'A': (0, 0), 'B': (1, 0), 'C': (2, 0), 'D': (3, 0),
                 'E': (4, 0), 'F': (5, 0), 'G': (6, 0), 'H': (7, 0),

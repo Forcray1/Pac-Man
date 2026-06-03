@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
 
-# The maze generator uses recursion up to width*height deep.
 # Raise the limit so large mazes don't hit Python's default cap of 1000.
 sys.setrecursionlimit(10000)
 
@@ -100,7 +99,7 @@ _maze_cache: dict[tuple[int, int, int], list[list[int]]] = {}
 
 def _safe_font(path: str, size: int) -> "pygame.font.Font":
     """
-    Load *path* as a pygame font at *size* points.
+    Load path as a pygame font at size points.
     Falls back to the system default font with a WARNING on stderr when
     the file is absent or unreadable.
     """

@@ -24,7 +24,6 @@ class SoundManager:
         Bring up pygame.mixer and reserve channels 0 (music) and 1 (fan).
         """
         self._sounds: dict[str, pygame.mixer.Sound | None] = {}
-        self._loops: dict[str, pygame.mixer.Channel] = {}
         self._music_state: tuple[str, ...] | None = None
         self._menu_music_path: str | None = None
         self._sfx_master: float = 1.0
@@ -107,39 +106,6 @@ class SoundManager:
             return None
         snd.set_volume(self._scaled(volume))
         return snd.play()
-
-    def loop_start(self, name: str, volume: float = 1.0) -> None:
-        """
-        Start an infinite loop of name. Idempotent.
-        """
-        existing = self._loops.get(name)
-        if existing is not None and existing.get_busy():
-            existing.set_volume(self._scaled(volume))
-            return
-        snd = self._load(name)
-        if snd is None:
-            return
-        snd.set_volume(self._scaled(volume))
-        channel = snd.play(loops=-1)
-        if channel is not None:
-            self._loops[name] = channel
-
-    def loop_stop(self, name: str) -> None:
-        """
-        Stop a loop started by loop_start. Idempotent.
-        """
-        channel = self._loops.pop(name, None)
-        if channel is not None:
-            channel.stop()
-
-    def get_length(self, name: str) -> float:
-        """
-        Return the duration of sound name in seconds, or 0.0 if missing.
-        """
-        snd = self._load(name)
-        if snd is None:
-            return 0.0
-        return snd.get_length()
 
     def _music_channel(self) -> "pygame.mixer.Channel":
         """
@@ -320,7 +286,6 @@ class SoundManager:
             if i == self._FAN_CHANNEL_ID:
                 continue
             pygame.mixer.Channel(i).stop()
-        self._loops.clear()
         self._music_state = None
 
 

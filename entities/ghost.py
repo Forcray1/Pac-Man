@@ -29,18 +29,15 @@ class Ghost(Entity, ABC):
     Abstract class for the four ghosts
     """
 
-    def __init__(self, score: int, pos: tuple[int, int], cooldown: int = 2):
+    def __init__(self, score: int, pos: tuple[int, int]):
         """
-        Initialize a ghost at *pos* with its spawn point and a respawn
-        cooldown, in tiles-per-tick equivalent, used while dead.
+        Initialize a ghost at pos, which is also its spawn point.
         """
         super().__init__(pos)
         self.score: int = score
         self.spawn: tuple[int, int] = pos
         self.eatable: bool = False
         self.is_dead: bool = False
-        self.cooldown: int = cooldown
-        self._respawn_timer: int = 0
         self.direction: str = "S"
         self.current_path: list[tuple[int, int]] = []
 
@@ -57,13 +54,6 @@ class Ghost(Entity, ABC):
         """
         Tick: check if reached spawn while dead, then reactivate.
         """
-        if not self.active:
-            if self._respawn_timer > 0:
-                self._respawn_timer -= 1
-            if self._respawn_timer == 0:
-                self.active = True
-
-        # If dead and has reached spawn, reactivate
         if self.is_dead and (self.x, self.y) == self.spawn:
             self.is_dead = False
             self.active = True
@@ -113,6 +103,10 @@ class Ghost(Entity, ABC):
     ) -> list[tuple[int, int]]:
         """
         Return the shortest path to target through the map using A*.
+
+        The result is the list of tiles from start to goal inclusive, or an
+        empty list if goal is unreachable. forbidden_first_step blocks one
+        specific neighbour of start (used to stop ghosts U-turning).
         """
         if start == goal:
             return [start]
@@ -120,38 +114,48 @@ class Ghost(Entity, ABC):
         rows = len(map)
         cols = len(map[0]) if rows else 0
 
+        # open_set: tiles discovered but not yet expanded (the A* frontier).
+        # came_from: best predecessor of each tile, used to rebuild the path.
         open_set: set[tuple[int, int]] = {start}
         came_from: dict[tuple[int, int], tuple[int, int]] = {}
 
+        # g_score: known cost from start to a tile (1 per step).
+        # f_score: g_score + heuristic estimate of the cost left to the goal.
         g_score: dict[tuple[int, int], float] = {start: 0.0}
         f_score: dict[tuple[int, int], float] = {
             start: Ghost._heuristic(start, goal)
         }
 
         while open_set:
+            # Expand the frontier tile that looks cheapest overall (lowest f).
             current = min(open_set, key=lambda n: f_score.get(n, float("inf")))
 
+            # Reached the goal: walk came_from backwards into a path.
             if current == goal:
                 return Ghost._reconstruct_path(came_from, current)
 
             open_set.remove(current)
 
+            # Try each of the 4 orthogonal neighbours.
             cx, cy = current
             for (dx, dy) in _MASK:
                 nx, ny = cx + dx, cy + dy
 
-                # Forbid U-turn on the very first step
+                # Forbid the banned U-turn, but only on the first step.
                 if (current == start and forbidden_first_step and
                         (nx, ny) == forbidden_first_step):
                     continue
 
+                # Skip out-of-bounds and wall tiles.
                 if not (0 <= ny < rows and 0 <= nx < cols):
                     continue
-                if map[ny][nx] == 1:  # Avoid strictly walls (1 = WALL)
+                if map[ny][nx] == 1:  # Avoid strictly walls
                     continue
                 neighbor = (nx, ny)
+                # Cost to reach this neighbour through current (+1 step).
                 tentative_g = g_score.get(current, float("inf")) + 1
 
+                # Keep this route only if it beats any path found so far.
                 if tentative_g < g_score.get(neighbor, float("inf")):
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g
@@ -160,6 +164,7 @@ class Ghost(Entity, ABC):
                         goal)
                     open_set.add(neighbor)
 
+        # Frontier exhausted without reaching the goal: no path exists.
         return []
 
     @abstractmethod
@@ -175,8 +180,8 @@ class Ghost(Entity, ABC):
                       current: str | None = None
                       ) -> list[tuple[int, int]]:
         """
-        Return the walkable neighbour tiles around *pos*. A U-turn against
-        *current* is forbidden unless it is the only option available.
+        Return the walkable neighbour tiles around pos. A U-turn against
+        current is forbidden unless it is the only option available.
         """
         cx, cy = pos
         forbidden_dir = _OPPOSITE.get(current) if current else None
@@ -243,26 +248,24 @@ class Ghost(Entity, ABC):
         """
         Move one cell toward the target returned by choose_target.
         """
-        # 1. First physically advance in the previous direction
-        # (the one we just finished interpolating visually)
+        # First physically advance in the previous direction
         rev_mask = {v: k for k, v in _MASK.items()}
         current_offset = rev_mask.get(self.direction)
         if current_offset:
             dx, dy = current_offset
             next_x, next_y = self.x + dx, self.y + dy
-            # Make sure we don't walk into a wall (safety check)
+            # Make sure we don't walk into a wall
             if map[next_y][next_x] != 1:
                 self.set_position(next_x, next_y)
         else:
             return False
 
-        # 2. Now compute the NEXT step from this new position
+        # Compute the next step from this new position
         forbidden_first_step = None
 
         if self.eatable and not self.is_dead:
             target = self.choose_target_feared(monitor)
             # choose_target_feared already updates self.direction
-            # no need to recompute the path
             return True
 
         if self.is_dead:
@@ -294,7 +297,7 @@ class Ghost(Entity, ABC):
                                forbidden_first_step)
 
         if not path or len(path) < 2:
-            # If the ghost is stuck (e.g. dead-end), exceptionally allow
+            # If the ghost is stuck, exceptionally allow
             # a U-turn to escape.
             if forbidden_first_step is not None:
                 path = Ghost.next_case(map, (self.x, self.y), target, None)
@@ -312,7 +315,7 @@ class Ghost(Entity, ABC):
 
         nx, ny = path[1]
 
-        # 3. Update self.direction for the NEXT interpolation
+        # Update self.direction for the next interpolation
         ndx, ndy = nx - self.x, ny - self.y
         dir_str = _MASK.get((ndx, ndy))
         if dir_str:

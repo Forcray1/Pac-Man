@@ -25,8 +25,8 @@ class Game:
         level: int = 1,
     ) -> None:
         """
-        Initialize the game loop for a single *level* using the shared
-        *monitor*, *config* and *viewer*.
+        Initialize the game loop for a single level using the shared
+        monitor, config and viewer.
         """
         self.monitor = monitor
         self.config = config
@@ -40,20 +40,13 @@ class Game:
         clock = pygame.time.Clock()
         fps = 30
         max_time_ms: int = int(self.config.get("level_max_time", 90)) * 1000
-        elapsed_ms = 0      # in-game time played this life, in milliseconds
-        death_ms = 0        # time spent in the death animation, in ms
+        elapsed_ms = 0
+        death_ms = 0
         maze_swapped = False
         spawn_x = self.monitor.player.x
         spawn_y = self.monitor.player.y
 
-        # Real-time clock. dt_ms is the wall-clock time between two frames;
-        # last_tick is reset after any blocking sub-loop (pause menu, READY!
-        # overlay) so those pauses never count against the level timer or
-        # any entity timer.
         self.viewer._first_frame = True
-        # Present the pristine spawn (every entity centred on its tile) with
-        # the READY! overlay *before* the simulation advances, so the ghosts
-        # are never drawn with a fractional offset from a pre-overlay update.
         self.viewer.render_frame(elapsed_ms, max_time_ms, self.level)
         last_tick = pygame.time.get_ticks()
 
@@ -68,18 +61,14 @@ class Game:
                         if self.viewer._run_pause_menu() == "quit":
                             get_sounds().stop_all_loops()
                             return "quit"
-                        last_tick = pygame.time.get_ticks()  # skip pause time
+                        last_tick = pygame.time.get_ticks()
                     cheat_enabled = self.config.get("cheat_mode")
                     if cheat_enabled and event.key == pygame.K_c:
                         get_sounds().stop_all_loops()
                         if self.viewer._run_cheat_menu() == "next_level":
                             get_sounds().stop_all_loops()
                             return "win"
-                        last_tick = pygame.time.get_ticks()  # skip menu time
-                    # Direction is taken from KEYDOWN events only: a single
-                    # input source means a buffered turn is never overwritten
-                    # by a still-held key in the same frame (the old
-                    # double-input lag), and brief taps are never dropped.
+                        last_tick = pygame.time.get_ticks()
                     if not self.monitor.player.is_dying:
                         if event.key in (pygame.K_UP, pygame.K_w):
                             self.monitor.request_player_direction(0, -1)
@@ -90,8 +79,6 @@ class Game:
                         elif event.key in (pygame.K_RIGHT, pygame.K_d):
                             self.monitor.request_player_direction(1, 0)
 
-            # Wall-clock time elapsed since the previous frame (pauses and
-            # overlays already discounted via last_tick resets).
             now = pygame.time.get_ticks()
             dt_ms = now - last_tick
             last_tick = now
@@ -112,7 +99,7 @@ class Game:
 
             if self.monitor.player.is_dying:
                 death_ms += dt_ms
-                if death_ms >= 1300:  # ~1.3 s death animation
+                if death_ms >= 1300:
                     death_ms = 0
                     if self.monitor.player.lives <= 0:
                         get_sounds().stop_all_loops()
@@ -124,7 +111,7 @@ class Game:
             blocked_ms = self.viewer.render_frame(
                 elapsed_ms, max_time_ms, self.level)
             if blocked_ms:
-                last_tick = pygame.time.get_ticks()  # skip overlay time
+                last_tick = pygame.time.get_ticks()
             clock.tick(fps)
 
     def _reset_level(self, spawn_x: int, spawn_y: int) -> None:

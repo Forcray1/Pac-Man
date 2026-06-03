@@ -59,7 +59,9 @@ class ScoreManager:
         return score >= self.scores[-1][1]
 
     def check_name(self, username: str) -> bool:
-        """Return True if username is at most 10 alphanumeric/space chars."""
+        """
+		Return True if username is at most 10 alphanumeric/space chars.
+		"""
         if len(username) > 10:
             return False
         for i in username:
@@ -83,7 +85,7 @@ class ScoreManager:
 
     def top_scores(self) -> list[tuple[str, int]]:
         """
-        Return a copy of the current top-10 list (descending).
+        Return a copy of the current top-10 list.
         """
         return list(self.scores)
 

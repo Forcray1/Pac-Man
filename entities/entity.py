@@ -6,22 +6,11 @@ class Entity(ABC):
     """
     Abstract base class representing any mobile or interactive
     entity in the game (Pac-Man, Ghosts).
-
-    The chosen architecture separates the entity logic (its position,
-    its state) from its display.
-    This class provides a solid common foundation for:
-    - Managing spatial position (on the grid).
-    - Active/inactive state (e.g. alive or eaten).
-    - A strict contract (`update`) to force subclasses
-    to implement their game behaviour.
     """
 
     def __init__(self, pos: tuple[int, int]) -> None:
         """
         Initialise the entity with default coordinates.
-
-        Args:
-            pos (tuple): Tuple containing (x, y)
         """
         self.pos: tuple[int, int] = pos
         self.prev_pos: tuple[int,
@@ -33,7 +22,6 @@ class Entity(ABC):
         self.move_accumulator: float = 0.0
 
         # The sprite or ASCII character representing the entity.
-        # Can be typed more strictly depending on the view used.
         self.sprite: Any = None
 
         # `active` tracks whether the entity should be updated/displayed.
@@ -59,7 +47,7 @@ class Entity(ABC):
         """
         Update the entity's position.
         Using this method instead of modifying `self.pos` directly
-        allows adding checks or movement events later.
+        allows adding checks or movement events.
         """
         self.pos = (x, y)
 
@@ -68,7 +56,5 @@ class Entity(ABC):
         """
         Abstract method defining the entity update logic
         (AI, movement).
-        Each subclass (Ghost, Player) MUST override this method because
-        their movement and behaviour rules differ greatly.
         """
         pass

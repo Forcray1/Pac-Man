@@ -1,5 +1,6 @@
 import sys
 from typing import Any
+import random
 
 from entities.player import PacMan
 from entities.ghost import Ghost
@@ -80,8 +81,8 @@ class Monitor:
         config: dict[str, Any] | None = None,
     ) -> None:
         """
-        Initialize the monitor with the maze *grid*, the *player*, and the
-        optional list of *ghosts*. Pac-gum and super pac-gum objects are
+        Initialize the monitor with the maze grid, the player, and the
+        optional list of ghosts. Pac-gum and super pac-gum objects are
         extracted from the grid on the fly.
         """
         self.grid: list[list[int]] = grid
@@ -101,10 +102,6 @@ class Monitor:
         self.ghosts_frozen: bool = False
         self.collision: bool = True
         self._dot_toggle: int = 0
-
-    # ------------------------------------------------------------------
-    # Factory
-    # ------------------------------------------------------------------
 
     @classmethod
     def from_maze(
@@ -176,7 +173,6 @@ class Monitor:
         Regenerate the maze in place while preserving the position of every
         entity and remaining pac-gum.
         """
-        import random
 
         maze_width = (self.cols - 1) // 2
         maze_height = (self.rows - 1) // 2
@@ -290,9 +286,8 @@ class Monitor:
 
     def update(self, dt_ms: int = 0) -> None:
         """
-        Tick every entity managed by the monitor. *dt_ms* is the real time
-        elapsed since the previous tick (milliseconds); it is forwarded to
-        every entity so timers count down in wall-clock time, not in frames.
+        Tick every entity managed by the monitor. dt_ms is the real time
+        elapsed since the previous tick (milliseconds)
         """
         self.player.prev_pos = self.player.pos
         for ghost in self.active_ghosts:
@@ -351,7 +346,7 @@ class Monitor:
 
         A perpendicular turn is buffered and taken at the next tile where
         the way opens up (see :meth:`_move_player`). A reversal of the
-        current heading, however, is applied *immediately* so Pac-Man turns
+        current heading, however, is applied immediately so Pac-Man turns
         back from the tile he visually occupies right now instead of
         overshooting to the tile ahead first. The move accumulator is
         inverted on reversal so the on-screen sprite never jumps.
@@ -373,8 +368,6 @@ class Monitor:
             and 0 <= ahead_x < self.cols
             and self.grid[ahead_y][ahead_x] != WALL
         ):
-            # We were partway into the tile ahead: commit to it and invert
-            # the progress so the sprite keeps its exact screen position.
             p.set_position(ahead_x, ahead_y)
             p.move_accumulator = max(0.0, 1.0 - p.move_accumulator)
         p.direction = (dx, dy)
@@ -387,7 +380,7 @@ class Monitor:
         Then we check if we can corner (change direction) for the next
         movement phase.
         """
-        # 1. Advance in the current direction if the cell ahead is free
+        # Advance in the current direction if the cell ahead is free
         dx, dy = self.player.direction
         if dx != 0 or dy != 0:
             next_x = self.player.x + dx
@@ -398,7 +391,7 @@ class Monitor:
             # If the player was idle, let them start instantly
             pass
 
-        # 2. Cornering: adopt next_direction if the way is clear from the
+        # Cornering: adopt next_direction if the way is clear from the
         # tile we now stand on, then consume the buffered input so a stale
         # turn cannot fire again at a later intersection.
         nx_dx, nx_dy = self.player.next_direction

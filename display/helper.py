@@ -13,9 +13,9 @@ class Helper:
     corner. One instance per surface; replaying show() restarts it.
     """
 
-    DURATION_IN = 350    # ms slide-in
+    DURATION_IN = 350  # ms slide-in
     DURATION_HOLD = 2600  # ms hold
-    DURATION_OUT = 450   # ms slide-out
+    DURATION_OUT = 450  # ms slide-out
     DEFAULT_DELAY = 1000  # ms before the helper starts sliding in
 
     def __init__(self, screen_w: int, screen_h: int) -> None:
@@ -64,12 +64,12 @@ class Helper:
 
         if self.elapsed < self.DURATION_IN:
             t = self.elapsed / self.DURATION_IN
-            t = 1 - (1 - t) ** 3   # ease-out cubic
+            t = 1 - (1 - t) ** 3
             offset = int((1 - t) * (helper_w + 20))
         elif self.elapsed > self.DURATION_IN + self.DURATION_HOLD:
             t = (self.elapsed - self.DURATION_IN - self.DURATION_HOLD) \
                 / self.DURATION_OUT
-            t = t ** 3              # ease-in cubic
+            t = t ** 3
             offset = int(t * (helper_w + 20))
         else:
             offset = 0

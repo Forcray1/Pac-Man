@@ -34,8 +34,6 @@ class PacMan(Entity):
         self.power_timer: int = 0  # Remaining super time
         self.ghosts_eaten_in_combo: int = 0  # Points multiplier
 
-        self.eating_timer: int = 0  # ms left of the slowdown while eating
-
         # --- Variables for the Graphical view (Pygame / Blender) ---
         self.px: float = float(x)  # Fine position (Lerp) for fake 3D
         self.py: float = float(y)
@@ -43,13 +41,6 @@ class PacMan(Entity):
         self.is_dying: bool = False
         # self.speed_multiplier is inherited from Entity
         self.death_start_time: int = 0
-
-    def set_direction(self, dx: int, dy: int) -> None:
-        """
-        Store the next direction requested by the player.
-        dx, dy: -1, 0, or 1 (e.g. (1, 0) to move right).
-        """
-        self.next_direction = (dx, dy)
 
     def update(self, dt_ms: int = 0) -> None:
         """
@@ -75,18 +66,7 @@ class PacMan(Entity):
             self.power_timer -= dt_ms
             if self.power_timer <= 0:
                 self.is_powered_up = False
-                #  self.speed_multiplier = 1.0  # Back to normal speed
                 self.ghosts_eaten_in_combo = 0
-        else:
-            # Handle slowdown while consuming pac-gums
-            # (outside Super mode)
-            if self.eating_timer > 0:
-                self.eating_timer -= dt_ms
-                # Slowdown removed as it causes stuttering/lag
-                #  self.speed_multiplier = 1.0
-            else:
-                #  self.speed_multiplier = 1.0  # Normal speed
-                pass
 
         # Actual movement (x += dx) is handled by the controller (Game)
         # because collisions with walls (Maze) must be checked first
@@ -97,7 +77,6 @@ class PacMan(Entity):
         Add points to the score.
         """
         self.score += points
-        self.eating_timer = 0  # Disabled to avoid lag
 
     def trigger_power_up(self, duration: int = 0) -> None:
         """

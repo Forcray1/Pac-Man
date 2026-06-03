@@ -426,6 +426,11 @@ The project was managed jointly by **mlorenzo** and **avauclai** over four weeks
 		- Cleaned the game to remove unusefull code
 		- Went from frame counting to timestamp
 		- Corrected the small visual bug of the ghosts at the start of the game
+03/06/2026:
+	mlorenzo:
+		- Improved the parser
+		- Cleaned the code
+		- Added a toggle on point and click / keyboard input for arcade main menu, to avoid being stuck in a selection due to the mouse position
 
 ```
 
@@ -444,7 +449,7 @@ The project was managed jointly by **mlorenzo** and **avauclai** over four weeks
 AI tooling was used selectively, as a productivity multiplier on tasks where the team already knew the desired outcome:
 
 - **Repetitive code generation:** type hints, docstrings, mixin boilerplate, scaffolding for the polygon hit-test math in the lobby.
-- **README scaffolding:** initial structure of this file and tables, then audited section-by-section against the actual code.
+- **README scaffolding:** initial structure of this file.
 
 The AI was **not** used to design the architecture, the ghost AI rules, the parser semantics, the highscore model, or the packaging strategy — those were decided by the team. Every AI-generated diff was read, edited, run, and tested before being committed; nothing went in that the team could not explain end-to-end.
 

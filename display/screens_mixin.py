@@ -164,7 +164,9 @@ class ScreensMixin:
             clock.tick(30)
 
     def _run_highscores(self) -> None:
-        """Show top-10 leaderboard. ENTER or ESC to go back."""
+        """
+        Show top-10 leaderboard. ENTER or ESC to go back.
+        """
         _w, _h = self.screen.get_size()
         font_title = _safe_font(_TYPO_PATH, max(14, _h * 44 // 1080))
         font_row = _safe_font(_TYPO_PATH, max(10, _h * 26 // 1080))
@@ -222,7 +224,9 @@ class ScreensMixin:
             clock.tick(30)
 
     def _run_instructions(self) -> None:
-        """Show controls and rules. ENTER or ESC to go back."""
+        """
+        Show controls and rules. ENTER or ESC to go back.
+        """
         _w, _h = self.screen.get_size()
         font_title = _safe_font(_TYPO_PATH, max(14, _h * 44 // 1080))
         font_body = _safe_font(_TYPO_PATH, max(10, _h * 24 // 1080))
@@ -245,7 +249,7 @@ class ScreensMixin:
             ("ENTER or ESC  -  back", (120, 120, 120)),
         ]
 
-        # Index of the "back" hint in *lines* (last entry) so we can build
+        # Index of the "back" hint in lines (last entry) so we can build
         # a hit rect over it.
         back_idx = len(lines) - 1
 
@@ -304,9 +308,6 @@ class ScreensMixin:
         w, h = self.screen.get_size()
         clock = pygame.time.Clock()
 
-        # Brief black flash to make the jumpscare hit harder. The sound
-        # fires with the flash (a tick before the visual hit) so the audio
-        # arrives slightly ahead of the zoom.
         self.screen.fill((0, 0, 0))
         pygame.display.flip()
         pygame.event.pump()
@@ -325,7 +326,6 @@ class ScreensMixin:
                 if event.type == pygame.QUIT:
                     return
 
-            # Pulsing zoom (1.05x .. 1.20x) and violent shake.
             pulse = 0.5 + 0.5 * abs(((elapsed // 60) % 4) - 2) / 2
             zoom = 1.05 + 0.15 * pulse
             shake = max(4, 18 - int(elapsed / 120))
@@ -341,7 +341,6 @@ class ScreensMixin:
                 img, ((w - sw) // 2 + sx, (h - sh) // 2 + sy)
             )
 
-            # Red strobe overlay every other frame for the FNAF feel.
             if (elapsed // 80) % 2 == 0:
                 overlay = pygame.Surface((w, h), pygame.SRCALPHA)
                 overlay.fill((180, 0, 0, 60))
@@ -350,7 +349,6 @@ class ScreensMixin:
             pygame.display.flip()
             clock.tick(60)
 
-        # Fade to black before handing control to the end screen.
         fade = pygame.Surface((w, h))
         fade.fill((0, 0, 0))
         for alpha in range(0, 256, 32):
@@ -363,7 +361,7 @@ class ScreensMixin:
             pygame.event.pump()
             clock.tick(60)
 
-        # Image is done — kill the sound so it doesn't bleed into game-over.
+        # Kill the sound so it doesn't bleed into game-over.
         if jumpscare_channel is not None:
             jumpscare_channel.stop()
 
@@ -470,7 +468,9 @@ class ScreensMixin:
             clock.tick(30)
 
     def _run_pause_menu(self) -> str:
-        """Overlay pause menu. Returns 'resume' or 'quit'."""
+        """
+        Overlay pause menu. Returns 'resume' or 'quit'.
+        """
         _w, _h = self.screen.get_size()
         font_title = _safe_font(_TYPO_PATH, max(14, _h * 46 // 1080))
         font_item = _safe_font(_TYPO_PATH, max(10, _h * 28 // 1080))
@@ -481,8 +481,6 @@ class ScreensMixin:
         selected = 0
         clock = pygame.time.Clock()
         blink_timer = 0
-        # Hover only changes the selection on real cursor movement, so a
-        # parked mouse never overrides keyboard navigation.
         last_mouse = pygame.mouse.get_pos()
 
         # Capture the current game frame to use as background
@@ -548,7 +546,7 @@ class ScreensMixin:
                 (255, 255, 0), cy - max(30, _h * 80 // 1080)
             )
 
-            # Blue separator (matches maze wall colour)
+            # Blue separator
             sep_x1, sep_x2 = w // 4, 3 * w // 4
             _sep_off = max(12, _h * 32 // 1080)
             pygame.draw.line(
@@ -580,6 +578,11 @@ class ScreensMixin:
             clock.tick(30)
 
     def _run_cheat_menu(self) -> str:
+        """
+        In-game cheat overlay (opened with the cheat key). Lets the player
+        toggle collision and ghost freezing, add a life, skip to the next
+        level, or resume.
+        """
         _w, _h = self.screen.get_size()
         font_title = _safe_font(_TYPO_PATH, max(14, _h * 46 // 1080))
         font_item = _safe_font(_TYPO_PATH, max(10, _h * 26 // 1080))
@@ -588,15 +591,15 @@ class ScreensMixin:
         selected = 0
         clock = pygame.time.Clock()
         blink_timer = 0
-        # Hover only changes the selection on real cursor movement, so a
-        # parked mouse never overrides keyboard navigation.
         last_mouse = pygame.mouse.get_pos()
 
         background = self.screen.copy()
 
         def _activate(idx: int) -> str | None:
-            """Apply the selected cheat. Returns 'resume'/'next_level' if
-            the menu should exit, else None."""
+            """
+            Apply the selected cheat. Returns 'resume'/'next_level' if
+            the menu should exit, else None.
+            """
             if idx == 0:
                 self.monitor.collision = not self.monitor.collision
             elif idx == 1:

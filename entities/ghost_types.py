@@ -13,14 +13,17 @@ class Blinky(Ghost):
 
     def __init__(self,
                  pos: tuple[int, int],
-                 cooldown: int = 2,
                  sprite: Any = None):
-        """Init the ghost at *pos* with score, cooldown and sprite."""
-        super().__init__(score=200, pos=pos, cooldown=cooldown)
+        """
+		Init the ghost at *pos* with score and sprite.
+		"""
+        super().__init__(score=200, pos=pos)
         self.sprite = sprite
 
     def choose_target(self, monitor: "Monitor") -> tuple[int, int]:
-        """Target Pac-Man's exact tile."""
+        """
+		Target Pac-Man's exact tile.
+		"""
         return (monitor.player.x, monitor.player.y)
 
 
@@ -31,14 +34,17 @@ class Pinky(Ghost):
 
     def __init__(self,
                  pos: tuple[int, int],
-                 cooldown: int = 2,
                  sprite: Any = None):
-        """Init the ghost at *pos* with score, cooldown and sprite."""
-        super().__init__(score=400, pos=pos, cooldown=cooldown)
+        """
+		Init the ghost at *pos* with score and sprite.
+		"""
+        super().__init__(score=400, pos=pos)
         self.sprite = sprite
 
     def choose_target(self, monitor: "Monitor") -> tuple[int, int]:
-        """Target 4 cells ahead of Pac-Man; fallback to direct chase."""
+        """
+		Target 4 cells ahead of Pac-Man; fallback to direct chase.
+		"""
         dx, dy = monitor.player.direction
         # Original Pac-Man bug: when moving UP, it also targets LEFT
         dx_offset = dx
@@ -65,14 +71,17 @@ class Inky(Ghost):
 
     def __init__(self,
                  pos: tuple[int, int],
-                 cooldown: int = 2,
                  sprite: Any = None):
-        """Init the ghost at *pos* with score, cooldown and sprite."""
-        super().__init__(score=800, pos=pos, cooldown=cooldown)
+        """
+		Init the ghost at *pos* with score and sprite.
+		"""
+        super().__init__(score=800, pos=pos)
         self.sprite = sprite
 
     def choose_target(self, monitor: "Monitor") -> tuple[int, int]:
-        """Target the reflection of Blinky through 2 cells ahead."""
+        """
+		Target the reflection of Blinky through 2 cells ahead.
+		"""
         blinky = monitor.get_ghost(Blinky)
         if blinky is not None and blinky.active:
             dx, dy = monitor.player.direction
@@ -110,14 +119,17 @@ class Clyde(Ghost):
 
     def __init__(self,
                  pos: tuple[int, int],
-                 cooldown: int = 2,
                  sprite: Any = None):
-        """Init the ghost at *pos* with score, cooldown and sprite."""
-        super().__init__(score=200, pos=pos, cooldown=cooldown)
+        """
+		Init the ghost at *pos* with score and sprite.
+		"""
+        super().__init__(score=200, pos=pos)
         self.sprite = sprite
 
     def choose_target(self, monitor: "Monitor") -> tuple[int, int]:
-        """Chase Pac-Man when far; scatter to a corner when close."""
+        """
+		Chase Pac-Man when far; scatter to a corner when close.
+		"""
         # Using heuristic to determine if we should chase or scatter
         dist = Ghost._heuristic((self.x, self.y),
                                 (monitor.player.x, monitor.player.y))

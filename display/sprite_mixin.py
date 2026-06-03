@@ -19,7 +19,7 @@ class SpritesMixin:
         _ascii_cache: dict[tuple[str, int], pygame.Surface]
         _ascii_font_size: int | None
 
-    # ASCII-fallback glyphs for missing assets.
+    # ASCII-fallback for missing assets.
     # letter + RGB + size-fraction (relative to TILE_SIZE).
     _ASCII_FALLBACK: dict[str, tuple[str, tuple[int, int, int], float]] = {
         "wall": ("#", (33, 33, 255), 1.0),
@@ -41,7 +41,9 @@ class SpritesMixin:
     }
 
     def _get_ascii_font(self) -> pygame.font.Font:
-        """Return (and lazily build) the font used for ASCII fallbacks."""
+        """
+		Return the font used for ASCII fallbacks.
+		"""
         if not pygame.font.get_init():
             pygame.font.init()
         cached_size = getattr(self, "_ascii_font_size", None)
@@ -65,7 +67,7 @@ class SpritesMixin:
 
     def ascii_glyph(self, key: str) -> pygame.Surface:
         """
-        Return a tile-sized surface drawing the ASCII fallback for *key*.
+        Return a tile-sized surface drawing the ASCII fallback for key.
         Cached per (key, TILE_SIZE) so the surface is only built once.
         """
         if not hasattr(self, "_ascii_cache"):
@@ -241,9 +243,9 @@ class SpritesMixin:
                 self.raw_images["texts"] = None
 
     def scale_sprites(self) -> None:
-        """Rescale every raw sprite to the current tile size for rendering."""
-        # Tile size may have changed; drop the ASCII glyph cache so the
-        # next ascii_glyph() call re-renders at the new resolution.
+        """
+		Rescale every raw sprite to the current tile size for rendering.
+		"""
         self._ascii_cache = {}
         self._ascii_font_size: int | None = None
         self.sprites: dict[

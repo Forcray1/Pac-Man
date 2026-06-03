@@ -5,7 +5,7 @@ import sys
 from typing import Any
 
 from core.config import edited_config
-from core.parser import parser
+from core.parser import ConfigParser
 from core.sounds import get_sounds
 from display.pygame_viewer import PygameViewer
 from display.helper import get_helper
@@ -77,21 +77,21 @@ class Redirect:
         def _s(x: int, y: int) -> tuple[int, int]:
             return (x * sw // 3840, y * sh // 2160)
 
-        # Arcade cabinet → Play
+        # Arcade cabinet -> Play
         poly_play = [
             _s(1817,  144),
             _s(2223,  144),
             _s(2223, 1210),
             _s(1817, 1210),
         ]
-        # Retro computer → Settings
+        # Retro computer -> Settings
         poly_config = [
             _s(489, 1018),
             _s(1252,  912),
             _s(1290, 1379),
             _s(573, 1553),
         ]
-        # Fan base → Fan
+        # Fan base -> Fan
         poly_fan = [
             _s(3186, 1598),
             _s(3413, 1672),
@@ -100,8 +100,8 @@ class Redirect:
         ]
         # Quit button — small round, top-left
         # edit quit_margin / quit_r to reposition
-        quit_margin = 14   # distance from screen edges
-        quit_r = 22        # radius in pixels
+        quit_margin = 14  # distance from screen edges
+        quit_r = 22  # radius in pixels
         btn_quit = pygame.Rect(
             quit_margin, quit_margin, quit_r * 2, quit_r * 2
         )
@@ -116,8 +116,6 @@ class Redirect:
         # Achievement helper fires once per lobby entry — no hover triggers.
         helper = get_helper(screen)
         helper.show(_LOBBY_HELPER)
-
-        tick = 0  # frame counter — available for custom animations
 
         # Animation frames
         _anim_dir = os.path.join(
@@ -156,7 +154,7 @@ class Redirect:
                         file=sys.stderr,
                     )
         anim_frame_idx = 0
-        anim_timer = 0         # ms accumulator
+        anim_timer = 0  # ms accumulator
 
         # Pre-load transition animations into cache
         _to_game_dir = os.path.join(
@@ -201,7 +199,7 @@ class Redirect:
                             pygame.event.clear()
                             helper.show(_LOBBY_HELPER)
 
-            dt = clock.get_time()   # ms since last tick
+            dt = clock.get_time()  # ms since last tick
             helper.update()
 
             # Fan slow-down / restart effect
@@ -235,12 +233,6 @@ class Redirect:
             else:
                 screen.fill((0, 0, 0))
 
-            # # Mouse position debug (top-right)
-            # pos_surf = font_hint.render(
-            #     f"{mouse[0]}, {mouse[1]}", True, (255, 255, 255)
-            # )
-            # screen.blit(pos_surf, (sw - pos_surf.get_width() - 8, 8))
-
             # Draw quit button (translucent grey circle, top-left)
             quit_surf = pygame.Surface(
                 (quit_r * 2, quit_r * 2), pygame.SRCALPHA
@@ -263,7 +255,6 @@ class Redirect:
             helper.draw(screen)
 
             pygame.display.flip()
-            tick += 1
             clock.tick(FPS)
 
     def _preload_animation(self, screen: pygame.Surface, path: str) -> None:
@@ -415,7 +406,7 @@ class Redirect:
             get_sounds().menu_music_set_volume(_MENU_MUSIC_FULL_VOL)
             self.launch_animation(anim_path, 30, reverse=True)
             return
-        parsed = parser(self.config_path)
+        parsed = ConfigParser(self.config_path).parse()
         if parsed:
             self.config = parsed
         get_sounds().menu_music_set_volume(_MENU_MUSIC_FULL_VOL)

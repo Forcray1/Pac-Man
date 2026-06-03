@@ -28,7 +28,7 @@ class RendererMixin:
     def get_wall_mask(self, grid: list[list[int]], x: int, y: int) -> int:
         """
         Return a 4-bit mask describing which of the top/right/bottom/left
-        neighbours of *(x, y)* are walls.
+        neighbours of (x, y) are walls.
         """
         mask = 0
         row_count = len(grid)
@@ -49,13 +49,13 @@ class RendererMixin:
     ) -> list[pygame.Surface]:
         """
         Pick the sprite stack (border + inside wall) to draw for the wall
-        cell *(x, y)* given its neighbour *mask*.
+        cell (x, y) given its neighbour mask.
         """
         sprites_to_draw: list[pygame.Surface] = []
         is_border = False
         is_corner = False
 
-        # --- 1. BORDER AND CORNER IDENTIFICATION ---
+        # BORDER AND CORNER IDENTIFICATION
         border_sprite = None
 
         # Corner detection (no inside wall sprites here)
@@ -90,7 +90,7 @@ class RendererMixin:
         if is_corner:
             return sprites_to_draw
 
-        # --- 2. DRAWING JUNCTIONS WITH OFFSET ---
+        # DRAWING JUNCTIONS WITH OFFSET
         temp_surface = pygame.Surface(
             (self.TILE_SIZE, self.TILE_SIZE), pygame.SRCALPHA
         )
@@ -98,8 +98,6 @@ class RendererMixin:
         color = (33, 33, 255)  # Pac-Man blue
 
         # OFFSET: double border thickness.
-        # Adjust this value (4, 5 or 6) so the line stops exactly on
-        # the sprite edge.
         offset = 5
 
         if not is_border:
@@ -225,15 +223,13 @@ class RendererMixin:
 
     def _update_dimensions(self, new_tile_size: int) -> None:
         """
-        Update the tile size and re-centre the maze; window stays fullscreen.
+        Update the tile size and re-centre the maze.
         """
         # Safety guard to avoid tiny tiles
         self.TILE_SIZE = max(4, new_tile_size)
 
         # The window is fullscreen — use the actual surface size.
         actual_w, actual_h = self.screen.get_size()
-        self.screen_width = actual_w
-        self.screen_height = actual_h
 
         # Re-centre the maze in the fullscreen window
         self.offset_x = (actual_w - (self.cols * self.TILE_SIZE)) // 2
@@ -241,7 +237,9 @@ class RendererMixin:
         self.scale_sprites()
 
     def draw_items(self) -> None:
-        """Draw the active pac-gums and super pac-gums."""
+        """
+		Draw the active pac-gums and super pac-gums.
+		"""
         all_gums = self.monitor.pacgums + self.monitor.super_pacgums
 
         for gum in all_gums:
@@ -406,10 +404,9 @@ class RendererMixin:
             if not ghost.active:
                 continue
 
-            # --- POSITION COMPUTATION (Interpolation) ---
             # Only interpolate toward the next tile when that tile is
-            # walkable, so a ghost never visually drifts into a wall (e.g.
-            # along its default heading at spawn) and then snaps back.
+            # walkable, so a ghost never visually drifts into a wall
+			# and then snaps back.
             dx, dy = dir_map_vectors.get(ghost.direction, (0, 0))
             render_x, render_y = float(ghost.x), float(ghost.y)
             grid = self.monitor.grid
@@ -419,7 +416,7 @@ class RendererMixin:
                 render_x += dx * ghost.move_accumulator
                 render_y += dy * ghost.move_accumulator
 
-            # --- FRAME SELECTION ---
+            # FRAME SELECTION
             ghost_dir = dir_map_str.get(ghost.direction, "Down")
 
             if ghost.is_dead:
@@ -447,7 +444,7 @@ class RendererMixin:
             else:
                 frames = None
 
-            # --- Drawing with double validation ---
+            # Drawing with double validation
             sprite = None
             if frames and isinstance(frames, list) and len(frames) > 0:
                 frame_index = (pygame.time.get_ticks() // 150) % len(frames)

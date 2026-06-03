@@ -3,7 +3,7 @@ import sys
 
 import pygame
 
-from core.parser import parser
+from core.parser import ConfigParser
 from core.redirect import Redirect
 from mazegenerator.mazegenerator import MazeGenerator  # noqa: E402
 
@@ -31,7 +31,7 @@ def main() -> None:
             sys.exit(0)
         config_file = f"config/{sys.argv[1]}"
         config_path = os.path.join(os.path.dirname(__file__), config_file)
-        config = parser(config_path)
+        config = ConfigParser(config_path).parse()
         if not config:
             print("ERROR: Failed to load config. Check config.json.",
                   file=sys.stderr)
