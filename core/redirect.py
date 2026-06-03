@@ -106,11 +106,13 @@ class Redirect:
             quit_margin, quit_margin, quit_r * 2, quit_r * 2
         )
 
-        # (polygon, label, callable, launch-animation path or None)
+        # (polygon, label, callable, launch-animation path or None,
+        #  leaves_lobby) — leaves_lobby is True for actions that open a
+        #  sub-screen and return; the fan toggle stays in the lobby.
         buttons = [
-            (poly_play,   "PLAY",     self.to_game,     None),
-            (poly_config, "SETTINGS", self.to_computer, None),
-            (poly_fan,    "FAN",      self.on_fan,       None),
+            (poly_play,   "PLAY",     self.to_game,     None, True),
+            (poly_config, "SETTINGS", self.to_computer, None, True),
+            (poly_fan,    "FAN",      self.on_fan,       None, False),
         ]
 
         # Achievement helper fires once per lobby entry — no hover triggers.
@@ -188,16 +190,18 @@ class Redirect:
                         get_sounds().fan_stop()
                         pygame.quit()
                         return
-                    for poly, _label, action, launch_anim in buttons:
+                    for (poly, _label, action,
+                         launch_anim, leaves_lobby) in buttons:
                         if _in_poly(mouse, poly):
                             self.launch_animation(launch_anim)
                             action()
-                            # Restore caption; reuse existing surface to
-                            # avoid window flicker on return.
-                            screen = pygame.display.get_surface() or screen
-                            pygame.display.set_caption("Pac-Man")
-                            pygame.event.clear()
-                            helper.show(_LOBBY_HELPER)
+                            if leaves_lobby:
+                                screen = (
+                                    pygame.display.get_surface() or screen
+                                )
+                                pygame.display.set_caption("Pac-Man")
+                                pygame.event.clear()
+                                helper.show(_LOBBY_HELPER)
 
             dt = clock.get_time()  # ms since last tick
             helper.update()

@@ -443,6 +443,7 @@ The project was managed jointly by **mlorenzo** and **avauclai** over four weeks
 			- Extracted a reusable `MenuNav` driver (display/menu.py) so the hover / keyboard / click logic lives in one place instead of being copy-pasted into every menu
 			- Moved the "READY!" sprite-sheet text rendering out of the game loop into `SpritesMixin.render_text()`
 			- Split the 722-line `ScreensMixin` into `MenuScreensMixin` (pre-game screens) and `OverlayScreensMixin` (in-game overlays)
+		- Debugged the helper overplay in the main menu
 
 ```
 

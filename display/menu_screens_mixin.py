@@ -79,6 +79,10 @@ class MenuScreensMixin:
             cmd, idx = nav.handle(item_rects)
             if cmd == "quit":
                 return "quit"
+            if cmd == "escape":
+                # ESC acts as the "Exit" entry: leave the arcade menu.
+                get_sounds().play("button", volume=0.6)
+                return "quit"
             if cmd == "confirm":
                 get_sounds().play("button", volume=0.6)
                 return actions[idx]

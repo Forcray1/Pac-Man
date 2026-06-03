@@ -42,3 +42,9 @@ coll = COLLECT(
     upx_exclude=[],
     name='pac-man',
 )
+app = BUNDLE(
+    coll,
+    name='pac-man.app',
+    icon=None,
+    bundle_identifier=None,
+)
