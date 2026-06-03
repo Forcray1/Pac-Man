@@ -12,6 +12,10 @@ Once inside the arcade, the player navigates a procedurally generated maze, eats
 
 ## Instructions
 
+### Download :
+
+- The game is fully downloadable via itch.io at this link : `https://forcray1.itch.io/pac-man`
+
 ### Requirements
 
 - Python 3.10+
