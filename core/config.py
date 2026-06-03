@@ -6,7 +6,7 @@ from core.sounds import get_sounds
 from display.helper import get_helper
 
 
-_BG = (0, 0, 0). # pure black
+_BG = (0, 0, 0)  # pure black
 _GREEN = (0, 255, 70)  # phosphor green
 _DIM = (0, 130, 35)  # dim green (inactive / decorative)
 _AMBER = (255, 176, 0)  # amber — selection highlight
