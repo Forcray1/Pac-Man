@@ -53,6 +53,7 @@ class PygameViewer(
             self._base_maze_width = self.maze_width
             self._base_maze_height = self.maze_height
             self.config = {
+                "seed": self._seed,
                 "super_pacgums": 4,
                 "p_pacgums": int(config.get("points_per_pacgum", 10)),
                 "p_Spacgums": int(

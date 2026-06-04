@@ -82,9 +82,19 @@ class ConfigParser:
             print(f"WARNING: '{key}' is not an integer ({value!r}),"
                   f" using default {default}\n", file=sys.stderr)
             return default
-        if lo is not None and hi is not None and (n < lo or n > hi):
-            clamped = max(lo, min(hi, n))
-            print(f"WARNING: '{key}' must be between {lo} and {hi}"
+        if (lo is not None and n < lo) or (hi is not None and n > hi):
+            clamped = n
+            if lo is not None:
+                clamped = max(lo, clamped)
+            if hi is not None:
+                clamped = min(hi, clamped)
+            if lo is not None and hi is not None:
+                bound = f"between {lo} and {hi}"
+            elif lo is not None:
+                bound = f"at least {lo}"
+            else:
+                bound = f"at most {hi}"
+            print(f"WARNING: '{key}' must be {bound}"
                   f" ({n}), clamped to {clamped}\n", file=sys.stderr)
             return clamped
         return n
