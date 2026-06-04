@@ -131,7 +131,6 @@ Mazes are generated using the externally assigned **A-Maze-ing** package (`mazeg
 - At **difficulty 3+**, the maze grows by +3 cells in width and height between levels.
 - At **difficulty 5**, the maze is re-generated in place when half of `level_max_time` remains, preserving the player's score and lives.
 - A `_maze_cache` keyed on `(seed, width, height)` makes level resets (death, respawn) instantaneous by reusing the already-generated grid.
-- The generator's recursive `_find_short_path` method is monkey-patched to a no-op at startup — it is unused by our game and caused exponential slowdowns on large grids without that override. The generator itself is otherwise untouched.
 - If the generator raises, the loader catches the exception, prints a clean error, and exits without a traceback.
 
 ---
@@ -275,7 +274,7 @@ The project was managed jointly by **mlorenzo** and **avauclai** over four weeks
 | 12–14/05 | Sprite system, animations, level progression, cheat mode, 3D Blender renders | 
 | 15–21/05 | Pause menu, fullscreen mode, in-game config editor, flake8/mypy compliance | 
 | 22–27/05 | Lobby hub, point-and-click controls, jumpscare, packaging spec, parser polish | 
-| 28/05–02/06 | Helper popups, full sound design, README + project-management docs, packaging | 
+| 28/05–03/06 | Helper popups, full sound design, README + project-management docs, packaging | 
 
 ### Timeline
 
@@ -465,4 +464,3 @@ AI tooling was used selectively, as a productivity multiplier on tasks where the
 - **README scaffolding:** initial structure of this file.
 
 The AI was **not** used to design the architecture, the ghost AI rules, the parser semantics, the highscore model, or the packaging strategy — those were decided by the team. Every AI-generated diff was read, edited, run, and tested before being committed; nothing went in that the team could not explain end-to-end.
-
