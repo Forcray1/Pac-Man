@@ -211,8 +211,9 @@ class PygameViewer(
                         current_level += 1
 
                         self._seed = 0
-                        self.maze_width += 3
-                        self.maze_height += 3
+                        if self.config["difficulty"] >= 3:
+                            self.maze_width += 3
+                            self.maze_height += 3
                         self.monitor = self._build_monitor()
                         self._fit_maze_to_screen()
 
