@@ -170,6 +170,12 @@ class PygameViewer(
         """
         get_helper(self.screen).show("Point and click or arrows")
         while True:
+            # Reset maze dimensions for the menu and first level
+            self.maze_width = self._base_maze_width
+            self.maze_height = self._base_maze_height
+            self.monitor = self._build_monitor()
+            self._fit_maze_to_screen()
+
             action = self._run_menu()
             if action == "quit":
                 break
