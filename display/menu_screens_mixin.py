@@ -98,7 +98,7 @@ class MenuScreensMixin:
             if anim_x > w + 100:
                 anim_x = -450
 
-            anim_y = h - 60
+            anim_y = h - 110
             time_ticks = pygame.time.get_ticks()
             pac_frame = (time_ticks // 100) % 4
             ghost_frame = (time_ticks // 150) % 2
@@ -107,14 +107,15 @@ class MenuScreensMixin:
             if isinstance(pacman_sprite_list, list):
                 pac_sprite = pacman_sprite_list[pac_frame]
                 if pac_sprite:
-                    self.screen.blit(pac_sprite, (anim_x, anim_y))
+                    pacman_x = anim_x - 50
+                    self.screen.blit(pac_sprite, (pacman_x, anim_y))
 
             for i, name in enumerate(["Blinky", "Pinky", "Inky", "Clyde"]):
                 ghost_sprite_list = self.sprites.get(f"{name}_Right")
                 if isinstance(ghost_sprite_list, list):
                     ghost_sprite = ghost_sprite_list[ghost_frame]
                     if ghost_sprite:
-                        ghost_x = anim_x + 100 + 60 * i
+                        ghost_x = anim_x + 100 + 120 * i
                         self.screen.blit(ghost_sprite, (ghost_x, anim_y))
 
             if _logo_raw is not None:
